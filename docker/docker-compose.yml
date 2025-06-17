@@ -5,9 +5,13 @@ services:
     container_name: fodmap-db-container
     image: postgres:15-alpine
     env_file: .env
+    environment:
+      # Pass additional environment variables for the init script
+      - APP_DB_USER=${APP_DB_USER}
+      - APP_DB_PASSWORD=${APP_DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../migrations/init.sh:/docker-entrypoint-initdb.d/init.sh
     ports:
       - "5432:5432"
     healthcheck:
