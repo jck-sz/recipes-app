@@ -1,0 +1,404 @@
+openapi: 3.0.3
+info:
+  title: FODMAP Recipe API
+  description: |
+    A comprehensive API for managing FODMAP-friendly recipes, ingredients, and categories.
+    
+    ## Features
+    - Complete CRUD operations for recipes, ingredients, categories, and tags
+    - FODMAP level filtering and safety checks
+    - Advanced search and filtering capabilities
+    - Bulk operations for data management
+    - Comprehensive validation and error handling
+    
+    ## FODMAP Levels
+    - **LOW**: Safe for FODMAP diet
+    - **MODERATE**: Limited quantities allowed  
+    - **HIGH**: Should be avoided on FODMAP diet
+  version: 1.0.0
+  contact:
+    name: FODMAP Recipe API
+    url: https://github.com/your-repo/fodmap-api
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.fodmap-recipes.com
+    description: Production server
+
+paths:
+  /health:
+    get:
+      summary: Application health check
+      description: Returns application health status including database connectivity
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /categories:
+    get:
+      summary: List all categories
+      description: Returns all available recipe categories
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: Categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriesResponse'
+    
+    post:
+      summary: Create a new category
+      description: Creates a new recipe category
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreate'
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /categories/{id}:
+    get:
+      summary: Get category by ID
+      description: Returns a single category by its ID
+      tags:
+        - Categories
+      parameters:
+        - $ref: '#/components/parameters/IdPath'
+      responses:
+        '200':
+          description: Category retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /ingredients:
+    get:
+      summary: List ingredients with pagination
+      description: Returns paginated list of ingredients with optional filtering
+      tags:
+        - Ingredients
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: fodmap_level
+          in: query
+          description: Filter by FODMAP level
+          schema:
+            $ref: '#/components/schemas/FodmapLevel'
+      responses:
+        '200':
+          description: Ingredients retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngredientsResponse'
+
+  /recipes:
+    get:
+      summary: List recipes with filtering
+      description: Returns paginated list of recipes with advanced filtering options
+      tags:
+        - Recipes
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: category
+          in: query
+          description: Filter by category ID
+          schema:
+            type: integer
+        - name: search
+          in: query
+          description: Search in title and description
+          schema:
+            type: string
+        - name: tag
+          in: query
+          description: Filter by tag name
+          schema:
+            type: string
+        - name: prep_time_max
+          in: query
+          description: Maximum preparation time in minutes
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Recipes retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecipesResponse'
+
+components:
+  parameters:
+    IdPath:
+      name: id
+      in: path
+      required: true
+      description: Resource ID
+      schema:
+        type: integer
+        minimum: 1
+    
+    Page:
+      name: page
+      in: query
+      description: Page number for pagination
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    
+    Limit:
+      name: limit
+      in: query
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+
+  schemas:
+    FodmapLevel:
+      type: string
+      enum: [LOW, MODERATE, HIGH]
+      description: FODMAP level classification
+    
+    CategoryName:
+      type: string
+      enum: [Śniadanie, Obiad, Kolacja, Przekąska]
+      description: Valid category names (Polish)
+    
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          $ref: '#/components/schemas/CategoryName'
+      required: [id, name]
+    
+    CategoryCreate:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/CategoryName'
+      required: [name]
+    
+    Ingredient:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Marchew"
+        quantity_unit:
+          type: string
+          example: "g"
+        fodmap_level:
+          $ref: '#/components/schemas/FodmapLevel'
+      required: [id, name]
+    
+    Recipe:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Sałatka z marchewką"
+        description:
+          type: string
+          example: "Zdrowa sałatka"
+        preparation_time:
+          type: integer
+          example: 15
+        serving_size:
+          type: integer
+          example: 2
+        image_url:
+          type: string
+          format: uri
+          example: "https://example.com/image.jpg"
+        category_id:
+          type: integer
+          example: 1
+        category_name:
+          type: string
+          example: "Śniadanie"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required: [id, title, category_id]
+    
+    SuccessResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Operation successful"
+        data:
+          type: object
+      required: [error, message]
+    
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Error message"
+        details:
+          type: array
+          items:
+            type: string
+        code:
+          type: string
+          example: "ERROR_CODE"
+      required: [error, message]
+    
+    PaginationResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            pagination:
+              type: object
+              properties:
+                page:
+                  type: integer
+                  example: 1
+                limit:
+                  type: integer
+                  example: 10
+                totalCount:
+                  type: integer
+                  example: 50
+                totalPages:
+                  type: integer
+                  example: 5
+                hasNext:
+                  type: boolean
+                  example: true
+                hasPrev:
+                  type: boolean
+                  example: false
+    
+    HealthResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                status:
+                  type: string
+                  example: "healthy"
+                timestamp:
+                  type: string
+                  format: date-time
+                uptime:
+                  type: number
+                  example: 123.456
+                environment:
+                  type: string
+                  example: "development"
+    
+    CategoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/Category'
+    
+    CategoriesResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Category'
+    
+    IngredientsResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Ingredient'
+    
+    RecipesResponse:
+      allOf:
+        - $ref: '#/components/schemas/PaginationResponse'
+        - type: object
+          properties:
+            data:
+              type: array
+              items:
+                $ref: '#/components/schemas/Recipe'
+
+tags:
+  - name: Health
+    description: Application health and monitoring
+  - name: Categories
+    description: Recipe categories management
+  - name: Ingredients
+    description: Ingredients management with FODMAP levels
+  - name: Tags
+    description: Recipe tags management
+  - name: Recipes
+    description: Recipe management with ingredients and tags
