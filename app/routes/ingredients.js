@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { query, withTransaction } = require('../db');
-const { success, internalError, notFound, conflict, created, paginated } = require('../utils/responses');
+const { success, notFound, conflict, created, paginated } = require('../utils/responses');
 const { validateBody, validateParams, validateQuery } = require('../middleware/validation');
 const { asyncHandler } = require('../middleware/errorHandler');
+const { searchLimiter, bulkOperationLimiter } = require('../middleware/rateLimiting');
 const {
   ingredientCreateSchema,
   ingredientUpdateSchema,
@@ -53,6 +54,7 @@ router.get('/',
 
 // GET /ingredients/search?q=term - Search ingredients by name
 router.get('/search',
+  searchLimiter,
   validateQuery(ingredientSearchSchema),
   asyncHandler(async (req, res) => {
     const { q } = req.query;
@@ -252,6 +254,7 @@ router.delete('/:id',
 
 // POST /ingredients/bulk - Bulk import ingredients
 router.post('/bulk',
+  bulkOperationLimiter,
   validateBody(bulkIngredientsSchema),
   asyncHandler(async (req, res) => {
     const { ingredients } = req.body;

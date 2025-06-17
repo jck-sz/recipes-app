@@ -1,4 +1,9 @@
 require('dotenv').config();
+
+// Validate environment variables before starting the application
+const { validateEnvOrExit } = require('./utils/envValidation');
+validateEnvOrExit();
+
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -9,6 +14,8 @@ const app = express();
 // Import middleware
 const { requestId, requestLogger, errorLogger } = require('./middleware/logging');
 const { globalErrorHandler, notFoundHandler } = require('./middleware/errorHandler');
+const { generalLimiter, strictLimiter } = require('./middleware/rateLimiting');
+const { generalSanitization } = require('./middleware/inputSanitization');
 
 // Import all route modules
 const recipesRouter = require('./routes/recipes');
@@ -44,6 +51,10 @@ app.use(compression());
 // Request ID middleware
 app.use(requestId);
 
+// Rate limiting middleware
+app.use(generalLimiter);
+app.use(strictLimiter);
+
 // Request logging middleware
 app.use(requestLogger());
 
@@ -51,8 +62,11 @@ app.use(requestLogger());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Input sanitization middleware
+app.use(generalSanitization);
+
 // Add a root route
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
   res.json({ message: 'Welcome to the Recipe API!' });
 });
 
@@ -69,6 +83,56 @@ app.use(errorLogger);
 app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+let server;
+
+// Only start server if this file is run directly (not imported for testing)
+if (require.main === module) {
+  server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+
+  // Graceful shutdown handling
+  const gracefulShutdown = (signal) => {
+    console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
+
+    if (server) {
+      server.close((err) => {
+        if (err) {
+          console.error('Error during server shutdown:', err);
+          process.exit(1);
+        }
+        console.log('HTTP server closed.');
+
+        // Close database connections
+        const { closePool } = require('./db');
+        closePool().then(() => {
+          process.exit(0);
+        }).catch((err) => {
+          console.error('Error during database shutdown:', err);
+          process.exit(1);
+        });
+      });
+    } else {
+      process.exit(0);
+    }
+  };
+
+  // Handle shutdown signals
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+  // Handle uncaught exceptions
+  process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    gracefulShutdown('uncaughtException');
+  });
+
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    gracefulShutdown('unhandledRejection');
+  });
+}
+
+// Export app for testing
+module.exports = app;

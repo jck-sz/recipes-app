@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { query, withTransaction } = require('../db');
-const { success, internalError, notFound, conflict, created, paginated } = require('../utils/responses');
+const { success, notFound, conflict, created, paginated } = require('../utils/responses');
 const { validateBody, validateParams, validateQuery } = require('../middleware/validation');
 const { asyncHandler } = require('../middleware/errorHandler');
+const { bulkOperationLimiter } = require('../middleware/rateLimiting');
 const {
   recipeCreateSchema,
   recipeUpdateSchema,
@@ -16,6 +17,7 @@ const {
   idParamSchema
 } = require('../validation/schemas');
 const { parsePagination, buildPaginationResponse } = require('../utils/pagination');
+const { buildWhereClause, sanitizeLikeInput } = require('../utils/queryBuilder');
 
 // GET /recipes - List all recipes with filtering and pagination
 router.get('/',
@@ -24,49 +26,72 @@ router.get('/',
     const { page, limit, offset } = parsePagination(req.query);
     const { category, search, tag, prep_time_max } = req.query;
 
-    let whereConditions = [];
-    let queryParams = [];
-    let paramIndex = 1;
+    // Build safe WHERE conditions using query builder
+    const conditions = [];
 
-    // Build WHERE conditions
     if (category) {
-      whereConditions.push(`r.category_id = $${paramIndex}`);
-      queryParams.push(category);
-      paramIndex++;
+      conditions.push({
+        field: 'r.category_id',
+        value: category,
+        type: 'exact'
+      });
     }
 
     if (search) {
-      whereConditions.push(`(r.title ILIKE $${paramIndex} OR r.description ILIKE $${paramIndex})`);
-      queryParams.push(`%${search.trim()}%`);
-      paramIndex++;
+      // For search, we need a custom condition since it's OR across multiple fields
+      const searchTerm = sanitizeLikeInput(search);
+      conditions.push({
+        field: 'r.title',
+        value: searchTerm,
+        type: 'like'
+      });
+      // Note: We'll handle the OR condition manually for now
     }
 
     if (tag) {
-      whereConditions.push(`EXISTS (
-        SELECT 1 FROM recipe_tags rt
-        JOIN tags t ON rt.tag_id = t.id
-        WHERE rt.recipe_id = r.id AND t.name ILIKE $${paramIndex}
-      )`);
-      queryParams.push(`%${tag.trim()}%`);
-      paramIndex++;
+      conditions.push({
+        field: 'EXISTS',
+        value: {
+          query: `SELECT 1 FROM recipe_tags rt JOIN tags t ON rt.tag_id = t.id WHERE rt.recipe_id = r.id AND t.name ILIKE $${conditions.length + 1}`,
+          params: [`%${sanitizeLikeInput(tag)}%`]
+        },
+        type: 'exists'
+      });
     }
 
     if (prep_time_max) {
-      whereConditions.push(`r.preparation_time <= $${paramIndex}`);
-      queryParams.push(prep_time_max);
-      paramIndex++;
+      conditions.push({
+        field: 'r.preparation_time',
+        operator: '<=',
+        value: prep_time_max,
+        type: 'exact'
+      });
     }
 
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    const { whereClause, params: queryParams, nextIndex } = buildWhereClause(conditions);
+
+    // Handle search OR condition manually (more complex case)
+    let finalWhereClause = whereClause;
+    let finalParams = [...queryParams];
+
+    if (search && whereClause) {
+      // Replace the simple title LIKE with title OR description LIKE
+      const searchTerm = `%${sanitizeLikeInput(search)}%`;
+      finalWhereClause = whereClause.replace(
+        /r\.title ILIKE \$\d+/,
+        `(r.title ILIKE $1 OR r.description ILIKE $1)`
+      );
+      finalParams[0] = searchTerm; // Update the first param to be the search term
+    }
 
     // Get total count
     const countQuery = `
       SELECT COUNT(DISTINCT r.id) as count
       FROM recipes r
       LEFT JOIN categories c ON r.category_id = c.id
-      ${whereClause}
+      ${finalWhereClause}
     `;
-    const countResult = await query(countQuery, queryParams);
+    const countResult = await query(countQuery, finalParams);
     const totalCount = parseInt(countResult.rows[0].count);
 
     // Get paginated results with full details
@@ -87,13 +112,13 @@ router.get('/',
       LEFT JOIN categories c ON r.category_id = c.id
       LEFT JOIN recipe_ingredients ri ON r.id = ri.recipe_id
       LEFT JOIN recipe_tags rt ON r.id = rt.recipe_id
-      ${whereClause}
+      ${finalWhereClause}
       GROUP BY r.id, c.name
       ORDER BY r.created_at DESC
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+      LIMIT $${finalParams.length + 1} OFFSET $${finalParams.length + 2}
     `;
 
-    const dataResult = await query(dataQuery, [...queryParams, limit, offset]);
+    const dataResult = await query(dataQuery, [...finalParams, limit, offset]);
 
     const pagination = buildPaginationResponse(page, limit, totalCount);
     paginated(res, dataResult.rows, pagination, 'Recipes retrieved successfully');
@@ -210,61 +235,69 @@ router.get('/fodmap-safe',
   })
 );
 
-// GET /recipes/:id - Get single recipe with full details
+// GET /recipes/:id - Get single recipe with full details (optimized single query)
 router.get('/:id',
   validateParams(idParamSchema),
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    // Get recipe with category
-    const recipeQuery = `
+    // Single optimized query to get recipe with all related data
+    const fullRecipeQuery = `
+      WITH recipe_data AS (
+        SELECT
+          r.*,
+          c.name as category_name
+        FROM recipes r
+        LEFT JOIN categories c ON r.category_id = c.id
+        WHERE r.id = $1
+      ),
+      recipe_ingredients_data AS (
+        SELECT
+          ri.recipe_id,
+          json_agg(
+            json_build_object(
+              'id', i.id,
+              'name', i.name,
+              'quantity_unit', i.quantity_unit,
+              'fodmap_level', i.fodmap_level,
+              'quantity', ri.quantity
+            ) ORDER BY i.name
+          ) as ingredients
+        FROM recipe_ingredients ri
+        JOIN ingredients i ON ri.ingredient_id = i.id
+        WHERE ri.recipe_id = $1
+        GROUP BY ri.recipe_id
+      ),
+      recipe_tags_data AS (
+        SELECT
+          rt.recipe_id,
+          json_agg(
+            json_build_object(
+              'id', t.id,
+              'name', t.name
+            ) ORDER BY t.name
+          ) as tags
+        FROM recipe_tags rt
+        JOIN tags t ON rt.tag_id = t.id
+        WHERE rt.recipe_id = $1
+        GROUP BY rt.recipe_id
+      )
       SELECT
-        r.*,
-        c.name as category_name
-      FROM recipes r
-      LEFT JOIN categories c ON r.category_id = c.id
-      WHERE r.id = $1
+        rd.*,
+        COALESCE(rid.ingredients, '[]'::json) as ingredients,
+        COALESCE(rtd.tags, '[]'::json) as tags
+      FROM recipe_data rd
+      LEFT JOIN recipe_ingredients_data rid ON rd.id = rid.recipe_id
+      LEFT JOIN recipe_tags_data rtd ON rd.id = rtd.recipe_id
     `;
-    const recipeResult = await query(recipeQuery, [id]);
 
-    if (recipeResult.rows.length === 0) {
+    const result = await query(fullRecipeQuery, [id]);
+
+    if (result.rows.length === 0) {
       return notFound(res, 'Recipe', 'RECIPE_NOT_FOUND');
     }
 
-    const recipe = recipeResult.rows[0];
-
-    // Get ingredients
-    const ingredientsQuery = `
-      SELECT
-        i.id,
-        i.name,
-        i.quantity_unit,
-        i.fodmap_level,
-        ri.quantity
-      FROM recipe_ingredients ri
-      JOIN ingredients i ON ri.ingredient_id = i.id
-      WHERE ri.recipe_id = $1
-      ORDER BY i.name
-    `;
-    const ingredientsResult = await query(ingredientsQuery, [id]);
-
-    // Get tags
-    const tagsQuery = `
-      SELECT
-        t.id,
-        t.name
-      FROM recipe_tags rt
-      JOIN tags t ON rt.tag_id = t.id
-      WHERE rt.recipe_id = $1
-      ORDER BY t.name
-    `;
-    const tagsResult = await query(tagsQuery, [id]);
-
-    const fullRecipe = {
-      ...recipe,
-      ingredients: ingredientsResult.rows,
-      tags: tagsResult.rows
-    };
+    const fullRecipe = result.rows[0];
 
     success(res, fullRecipe, 'Recipe retrieved successfully');
   })
@@ -319,24 +352,33 @@ router.post('/',
 
       const recipe = recipeResult.rows[0];
 
-      // Insert ingredients
+      // Batch insert ingredients
       if (ingredients && ingredients.length > 0) {
-        for (const ingredient of ingredients) {
-          await client.query(
-            'INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES ($1, $2, $3)',
-            [recipe.id, ingredient.ingredient_id, ingredient.quantity]
-          );
-        }
+        const ingredientValues = ingredients.map((_, index) =>
+          `($1, $${index * 2 + 2}, $${index * 2 + 3})`
+        ).join(', ');
+
+        const ingredientParams = [recipe.id];
+        ingredients.forEach(ingredient => {
+          ingredientParams.push(ingredient.ingredient_id, ingredient.quantity);
+        });
+
+        await client.query(
+          `INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES ${ingredientValues}`,
+          ingredientParams
+        );
       }
 
-      // Insert tags
+      // Batch insert tags
       if (tags && tags.length > 0) {
-        for (const tagId of tags) {
-          await client.query(
-            'INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ($1, $2)',
-            [recipe.id, tagId]
-          );
-        }
+        const tagValues = tags.map((_, index) =>
+          `($1, $${index + 2})`
+        ).join(', ');
+
+        await client.query(
+          `INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ${tagValues}`,
+          [recipe.id, ...tags]
+        );
       }
 
       return recipe;
@@ -377,14 +419,21 @@ router.put('/:id',
         // Delete existing ingredients
         await client.query('DELETE FROM recipe_ingredients WHERE recipe_id = $1', [id]);
 
-        // Insert new ingredients
+        // Batch insert new ingredients
         if (ingredients.length > 0) {
-          for (const ingredient of ingredients) {
-            await client.query(
-              'INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES ($1, $2, $3)',
-              [id, ingredient.ingredient_id, ingredient.quantity]
-            );
-          }
+          const ingredientValues = ingredients.map((_, index) =>
+            `($1, $${index * 2 + 2}, $${index * 2 + 3})`
+          ).join(', ');
+
+          const ingredientParams = [id];
+          ingredients.forEach(ingredient => {
+            ingredientParams.push(ingredient.ingredient_id, ingredient.quantity);
+          });
+
+          await client.query(
+            `INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES ${ingredientValues}`,
+            ingredientParams
+          );
         }
       }
 
@@ -393,14 +442,16 @@ router.put('/:id',
         // Delete existing tags
         await client.query('DELETE FROM recipe_tags WHERE recipe_id = $1', [id]);
 
-        // Insert new tags
+        // Batch insert new tags
         if (tags.length > 0) {
-          for (const tagId of tags) {
-            await client.query(
-              'INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ($1, $2)',
-              [id, tagId]
-            );
-          }
+          const tagValues = tags.map((_, index) =>
+            `($1, $${index + 2})`
+          ).join(', ');
+
+          await client.query(
+            `INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ${tagValues}`,
+            [id, ...tags]
+          );
         }
       }
 
@@ -458,14 +509,21 @@ router.put('/:id/ingredients',
       // Delete existing ingredients
       await client.query('DELETE FROM recipe_ingredients WHERE recipe_id = $1', [id]);
 
-      // Insert new ingredients
+      // Batch insert new ingredients
       if (ingredients.length > 0) {
-        for (const ingredient of ingredients) {
-          await client.query(
-            'INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES ($1, $2, $3)',
-            [id, ingredient.ingredient_id, ingredient.quantity]
-          );
-        }
+        const ingredientValues = ingredients.map((_, index) =>
+          `($1, $${index * 2 + 2}, $${index * 2 + 3})`
+        ).join(', ');
+
+        const ingredientParams = [id];
+        ingredients.forEach(ingredient => {
+          ingredientParams.push(ingredient.ingredient_id, ingredient.quantity);
+        });
+
+        await client.query(
+          `INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES ${ingredientValues}`,
+          ingredientParams
+        );
       }
 
       // Get updated ingredient list
@@ -495,6 +553,7 @@ router.put('/:id/ingredients',
 
 // POST /recipes/bulk - Bulk import recipes
 router.post('/bulk',
+  bulkOperationLimiter,
   validateBody(bulkRecipesSchema),
   asyncHandler(async (req, res) => {
     const { recipes } = req.body;
@@ -517,24 +576,33 @@ router.post('/bulk',
 
           const newRecipe = recipeResult.rows[0];
 
-          // Insert ingredients
+          // Batch insert ingredients
           if (ingredients && ingredients.length > 0) {
-            for (const ingredient of ingredients) {
-              await client.query(
-                'INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES ($1, $2, $3)',
-                [newRecipe.id, ingredient.ingredient_id, ingredient.quantity]
-              );
-            }
+            const ingredientValues = ingredients.map((_, index) =>
+              `($1, $${index * 2 + 2}, $${index * 2 + 3})`
+            ).join(', ');
+
+            const ingredientParams = [newRecipe.id];
+            ingredients.forEach(ingredient => {
+              ingredientParams.push(ingredient.ingredient_id, ingredient.quantity);
+            });
+
+            await client.query(
+              `INSERT INTO recipe_ingredients (recipe_id, ingredient_id, quantity) VALUES ${ingredientValues}`,
+              ingredientParams
+            );
           }
 
-          // Insert tags
+          // Batch insert tags
           if (tags && tags.length > 0) {
-            for (const tagId of tags) {
-              await client.query(
-                'INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ($1, $2)',
-                [newRecipe.id, tagId]
-              );
-            }
+            const tagValues = tags.map((_, index) =>
+              `($1, $${index + 2})`
+            ).join(', ');
+
+            await client.query(
+              `INSERT INTO recipe_tags (recipe_id, tag_id) VALUES ${tagValues}`,
+              [newRecipe.id, ...tags]
+            );
           }
 
           createdRecipes.push({
@@ -575,46 +643,54 @@ router.post('/bulk',
 
 // DELETE /recipes/bulk - Bulk delete recipes by IDs
 router.delete('/bulk',
+  bulkOperationLimiter,
   validateBody(bulkDeleteSchema),
   asyncHandler(async (req, res) => {
     const { ids } = req.body;
 
     const results = await withTransaction(async (client) => {
-      const deletedRecipes = [];
-      const errors = [];
+      // First, get all existing recipes to validate and prepare response
+      const placeholders = ids.map((_, index) => `$${index + 1}`).join(', ');
+      const existingRecipesResult = await client.query(
+        `SELECT id, title FROM recipes WHERE id IN (${placeholders})`,
+        ids
+      );
 
-      for (const id of ids) {
-        try {
-          // Check if recipe exists
-          const existingResult = await client.query('SELECT id, title FROM recipes WHERE id = $1', [id]);
-          if (existingResult.rows.length === 0) {
-            errors.push({
-              id: id,
-              error: 'Recipe not found'
-            });
-            continue;
-          }
+      const existingRecipes = existingRecipesResult.rows;
+      const existingIds = existingRecipes.map(r => r.id);
+      const missingIds = ids.filter(id => !existingIds.includes(parseInt(id)));
 
-          const recipe = existingResult.rows[0];
+      const errors = missingIds.map(id => ({
+        id: id,
+        error: 'Recipe not found'
+      }));
 
-          // Delete relationships
-          await client.query('DELETE FROM recipe_ingredients WHERE recipe_id = $1', [id]);
-          await client.query('DELETE FROM recipe_tags WHERE recipe_id = $1', [id]);
+      let deletedRecipes = [];
 
-          // Delete recipe
-          await client.query('DELETE FROM recipes WHERE id = $1', [id]);
+      if (existingIds.length > 0) {
+        // Batch delete relationships
+        const existingPlaceholders = existingIds.map((_, index) => `$${index + 1}`).join(', ');
 
-          deletedRecipes.push({
-            id: recipe.id,
-            title: recipe.title
-          });
+        await client.query(
+          `DELETE FROM recipe_ingredients WHERE recipe_id IN (${existingPlaceholders})`,
+          existingIds
+        );
 
-        } catch (error) {
-          errors.push({
-            id: id,
-            error: error.message
-          });
-        }
+        await client.query(
+          `DELETE FROM recipe_tags WHERE recipe_id IN (${existingPlaceholders})`,
+          existingIds
+        );
+
+        // Batch delete recipes
+        await client.query(
+          `DELETE FROM recipes WHERE id IN (${existingPlaceholders})`,
+          existingIds
+        );
+
+        deletedRecipes = existingRecipes.map(recipe => ({
+          id: recipe.id,
+          title: recipe.title
+        }));
       }
 
       return { deletedRecipes, errors };

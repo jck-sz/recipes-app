@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
-const { success, internalError, notFound, conflict, created } = require('../utils/responses');
+const { success, notFound, conflict, created } = require('../utils/responses');
 const { validateBody, validateParams } = require('../middleware/validation');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { tagCreateSchema, tagUpdateSchema, idParamSchema } = require('../validation/schemas');
