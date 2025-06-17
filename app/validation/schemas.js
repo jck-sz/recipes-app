@@ -36,12 +36,14 @@ const ingredientUpdateSchema = Joi.object({
 });
 
 const ingredientQuerySchema = Joi.object({
-  ...paginationSchema.describe().keys,
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
   fodmap_level: fodmapLevel
 });
 
 const ingredientSearchSchema = Joi.object({
-  ...paginationSchema.describe().keys,
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
   q: nonEmptyString.required()
 });
 
@@ -86,7 +88,8 @@ const recipeUpdateSchema = Joi.object({
 });
 
 const recipeQuerySchema = Joi.object({
-  ...paginationSchema.describe().keys,
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
   category: positiveInteger,
   search: Joi.string().trim().min(1),
   tag: Joi.string().trim().min(1),
@@ -100,12 +103,14 @@ const idParamSchema = Joi.object({
 
 // Advanced query schemas
 const popularRecipesSchema = Joi.object({
-  ...paginationSchema.describe().keys,
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
   days: Joi.number().integer().min(1).max(365).default(30)
 });
 
 const fodmapSafeRecipesSchema = Joi.object({
-  ...paginationSchema.describe().keys,
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
   max_level: Joi.string().valid('LOW', 'MODERATE').default('LOW'),
   serving_size: positiveInteger
 });
