@@ -1,0 +1,12 @@
+{
+  "title": "Bananowy Smoothie",
+  "description": "Prosty smoothie z bananem",
+  "preparation_time": 5,
+  "category_id": 1,
+  "ingredients": [
+    {
+      "ingredient_id": 1,
+      "quantity": 1
+    }
+  ]
+}

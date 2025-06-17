@@ -1,0 +1,17 @@
+{
+  "title": "Smoothie z Awokado",
+  "description": "Zdrowy smoothie z awokado i szpinakiem",
+  "preparation_time": 5,
+  "serving_size": 2,
+  "category_id": 1,
+  "ingredients": [
+    {
+      "ingredient_id": 18,
+      "quantity": 1
+    },
+    {
+      "ingredient_id": 3,
+      "quantity": 50
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "fodmap-docker",
+  "version": "1.0.0",
+  "description": "Docker setup for FODMAP Recipe API",
+  "scripts": {
+    "setup": "node setup.js",
+    "dev": "docker-compose up",
+    "dev:detached": "docker-compose up -d",
+    "start": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "restart": "docker-compose restart",
+    "logs": "docker-compose logs -f",
+    "logs:api": "docker-compose logs -f api",
+    "logs:db": "docker-compose logs -f db",
+    "status": "docker-compose ps",
+    "clean": "docker-compose down -v",
+    "rebuild": "docker-compose up --build -d",
+    "shell:api": "docker-compose exec api sh",
+    "shell:db": "docker-compose exec db psql -U postgres -d fodmap_db"
+  }
+}
