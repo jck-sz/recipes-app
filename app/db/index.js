@@ -11,7 +11,9 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000, // Return an error after 2 seconds if connection could not be established
   maxUses: 7500, // Close (and replace) a connection after it has been used 7500 times
   // SSL configuration for production
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  // Ensure UTF-8 encoding
+  client_encoding: 'UTF8'
 });
 
 // Enhanced event handlers
@@ -93,10 +95,21 @@ const query = async (text, params = []) => {
 };
 
 // Graceful shutdown
+let isShuttingDown = false;
 const gracefulShutdown = async () => {
+  if (isShuttingDown) {
+    return;
+  }
+  isShuttingDown = true;
+
   logger.info('Closing database pool...');
-  await pool.end();
-  logger.info('Database pool closed');
+  try {
+    await pool.end();
+    logger.info('Database pool closed');
+  } catch (error) {
+    logger.error('Error closing database pool', error);
+  }
+  process.exit(0);
 };
 
 // Handle process termination

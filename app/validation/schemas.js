@@ -98,27 +98,72 @@ const idParamSchema = Joi.object({
   id: positiveInteger.required()
 });
 
+// Advanced query schemas
+const popularRecipesSchema = Joi.object({
+  ...paginationSchema.describe().keys,
+  days: Joi.number().integer().min(1).max(365).default(30)
+});
+
+const fodmapSafeRecipesSchema = Joi.object({
+  ...paginationSchema.describe().keys,
+  max_level: Joi.string().valid('LOW', 'MODERATE').default('LOW'),
+  serving_size: positiveInteger
+});
+
+const ingredientsByFodmapSchema = Joi.object({
+  level: fodmapLevel.required()
+});
+
+// Bulk operation schemas
+const bulkRecipesSchema = Joi.object({
+  recipes: Joi.array().items(recipeCreateSchema).min(1).max(100).required()
+});
+
+const bulkIngredientsSchema = Joi.object({
+  ingredients: Joi.array().items(ingredientCreateSchema).min(1).max(100).required()
+});
+
+const bulkDeleteSchema = Joi.object({
+  ids: Joi.array().items(positiveInteger).min(1).max(100).required()
+});
+
+// Recipe ingredients update schema
+const recipeIngredientsUpdateSchema = Joi.object({
+  ingredients: Joi.array().items(recipeIngredientSchema).required()
+});
+
 module.exports = {
   // Common
   paginationSchema,
   idParamSchema,
-  
+
   // Categories
   categoryCreateSchema,
   categoryUpdateSchema,
-  
+
   // Ingredients
   ingredientCreateSchema,
   ingredientUpdateSchema,
   ingredientQuerySchema,
   ingredientSearchSchema,
-  
+
   // Tags
   tagCreateSchema,
   tagUpdateSchema,
-  
+
   // Recipes
   recipeCreateSchema,
   recipeUpdateSchema,
-  recipeQuerySchema
+  recipeQuerySchema,
+
+  // Advanced queries
+  popularRecipesSchema,
+  fodmapSafeRecipesSchema,
+  ingredientsByFodmapSchema,
+
+  // Bulk operations
+  bulkRecipesSchema,
+  bulkIngredientsSchema,
+  bulkDeleteSchema,
+  recipeIngredientsUpdateSchema
 };

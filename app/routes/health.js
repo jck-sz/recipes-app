@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../db');
+const { pool } = require('../db');
 const { success, internalError } = require('../utils/responses');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { logger } = require('../middleware/logging');

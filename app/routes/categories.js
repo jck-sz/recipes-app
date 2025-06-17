@@ -1,16 +1,32 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../db');
-const { success, internalError, notFound, conflict, created } = require('../utils/responses');
-const { validateBody, validateParams } = require('../middleware/validation');
+const { success, internalError, notFound, conflict, created, paginated } = require('../utils/responses');
+const { validateBody, validateParams, validateQuery } = require('../middleware/validation');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { categoryCreateSchema, categoryUpdateSchema, idParamSchema } = require('../validation/schemas');
+const { categoryCreateSchema, categoryUpdateSchema, idParamSchema, paginationSchema } = require('../validation/schemas');
+const { parsePagination, buildPaginationResponse } = require('../utils/pagination');
 
 // GET /categories - List all categories
 router.get('/', asyncHandler(async (req, res) => {
   const result = await query('SELECT * FROM categories ORDER BY id');
   success(res, result.rows, 'Categories retrieved successfully');
 }));
+
+// GET /categories/:id - Get single category
+router.get('/:id',
+  validateParams(idParamSchema),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const result = await query('SELECT * FROM categories WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return notFound(res, 'Category', 'CATEGORY_NOT_FOUND');
+    }
+
+    success(res, result.rows[0], 'Category retrieved successfully');
+  })
+);
 
 // POST /categories - Create new category (admin only for now)
 router.post('/',
@@ -88,6 +104,56 @@ router.delete('/:id',
     await query('DELETE FROM categories WHERE id = $1', [id]);
 
     success(res, { id: parseInt(id), name: existingResult.rows[0].name }, 'Category deleted successfully');
+  })
+);
+
+// GET /categories/:id/recipes - Get all recipes in category
+router.get('/:id/recipes',
+  validateParams(idParamSchema),
+  validateQuery(paginationSchema),
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { page, limit, offset } = parsePagination(req.query);
+
+    // Check if category exists
+    const categoryCheck = await query('SELECT id, name FROM categories WHERE id = $1', [id]);
+    if (categoryCheck.rows.length === 0) {
+      return notFound(res, 'Category', 'CATEGORY_NOT_FOUND');
+    }
+
+    // Get total count of recipes in category
+    const countQuery = 'SELECT COUNT(*) as count FROM recipes WHERE category_id = $1';
+    const countResult = await query(countQuery, [id]);
+    const totalCount = parseInt(countResult.rows[0].count);
+
+    // Get paginated recipes in category
+    const recipesQuery = `
+      SELECT
+        r.id,
+        r.title,
+        r.description,
+        r.preparation_time,
+        r.serving_size,
+        r.image_url,
+        r.created_at,
+        r.updated_at,
+        COUNT(ri.ingredient_id) as ingredient_count,
+        COUNT(rt.tag_id) as tag_count
+      FROM recipes r
+      LEFT JOIN recipe_ingredients ri ON r.id = ri.recipe_id
+      LEFT JOIN recipe_tags rt ON r.id = rt.recipe_id
+      WHERE r.category_id = $1
+      GROUP BY r.id
+      ORDER BY r.created_at DESC
+      LIMIT $2 OFFSET $3
+    `;
+    const recipesResult = await query(recipesQuery, [id, limit, offset]);
+
+    const pagination = buildPaginationResponse(page, limit, totalCount);
+    paginated(res, {
+      category: categoryCheck.rows[0],
+      recipes: recipesResult.rows
+    }, pagination, `Recipes in category "${categoryCheck.rows[0].name}"`);
   })
 );
 
