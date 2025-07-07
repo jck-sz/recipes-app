@@ -24,9 +24,10 @@ function buildWhereClause(conditions, startIndex = 1) {
 
   validConditions.forEach(condition => {
     const { field, operator = '=', value, type = 'exact' } = condition;
-    
+
     // Validate field name to prevent injection
-    if (!isValidFieldName(field)) {
+    // "EXISTS" is a special case used for subqueries
+    if (type !== 'exists' && !isValidFieldName(field)) {
       throw new Error(`Invalid field name: ${field}`);
     }
 
