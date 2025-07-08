@@ -23,6 +23,7 @@ const categoriesRouter = require('./routes/categories');
 const ingredientsRouter = require('./routes/ingredients');
 const tagsRouter = require('./routes/tags');
 const healthRouter = require('./routes/health');
+const adminRouter = require('./routes/admin');
 
 // Security middleware
 app.use(helmet({
@@ -76,6 +77,7 @@ app.use('/categories', categoriesRouter);
 app.use('/ingredients', ingredientsRouter);
 app.use('/tags', tagsRouter);
 app.use('/health', healthRouter);
+app.use('/admin', adminRouter);
 
 // Error handling middleware (must be last)
 app.use(notFoundHandler);
@@ -85,10 +87,59 @@ app.use(globalErrorHandler);
 const PORT = process.env.PORT || 3000;
 let server;
 
+// Database connection verification
+const { checkConnection } = require('./db');
+
+async function verifyDatabaseConnection() {
+  console.log('Verifying database connection...');
+  const maxRetries = 10;
+  const retryDelay = 2000; // 2 seconds
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const health = await checkConnection();
+
+    if (health.healthy) {
+      console.log('✅ Database connection verified successfully');
+      console.log(`Database timestamp: ${health.timestamp}`);
+      console.log(`Pool status: ${health.poolStatus.totalCount} total, ${health.poolStatus.idleCount} idle`);
+      return true;
+    }
+
+    console.warn(`❌ Database connection failed (attempt ${attempt}/${maxRetries}):`, health.error);
+
+    if (attempt < maxRetries) {
+      console.log(`Retrying in ${retryDelay/1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+    }
+  }
+
+  console.error('💥 Failed to establish database connection after all retries');
+  return false;
+}
+
 // Only start server if this file is run directly (not imported for testing)
 if (require.main === module) {
-  server = app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  // Start server with database verification
+  const startServer = async () => {
+    // Verify database connection before starting server
+    const dbConnected = await verifyDatabaseConnection();
+
+    if (!dbConnected) {
+      console.error('💥 Cannot start server without database connection');
+      process.exit(1);
+    }
+
+    server = app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+      console.log(`🔐 Admin panel: http://localhost:3001/admin.html`);
+    });
+  };
+
+  startServer().catch(error => {
+    console.error('Failed to start server:', error);
+    process.exit(1);
   });
 
   // Graceful shutdown handling

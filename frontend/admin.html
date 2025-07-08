@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FODMAP Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        .auth-section {
+            text-align: center;
+            padding: 3rem;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .auth-section h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+
+        .admin-panel {
+            display: none;
+        }
+
+        .form-group {
+            margin: 1.5rem 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 0.25rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button.secondary {
+            background: linear-gradient(45deg, #6c757d, #495057);
+        }
+
+        button.secondary:hover {
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        button.danger {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+
+        button.danger:hover {
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #f5c6cb;
+            margin: 1rem 0;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #c3e6cb;
+            margin: 1rem 0;
+        }
+
+        .ingredient-item {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .ingredient-item input, .ingredient-item select {
+            flex: 1;
+        }
+
+        .ingredient-item button {
+            flex: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 2rem;
+            background: #f8f9fa;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #6c757d;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+            background: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 2rem;
+            background: white;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 1rem;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Authentication Section -->
+        <div id="authSection" class="auth-section">
+            <h1>FODMAP Admin Panel</h1>
+            <p>Enter admin password to access the recipe management system</p>
+            <div class="form-group">
+                <input type="password" id="adminPassword" placeholder="Admin Password" />
+            </div>
+            <button onclick="authenticate()">Login</button>
+            <div id="authError" class="error"></div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1>FODMAP Recipe Admin</h1>
+                <button onclick="logout()" class="secondary">Logout</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('recipes')">Add Recipe</div>
+                <div class="tab" onclick="showTab('ingredients')">Add Ingredient</div>
+                <div class="tab" onclick="showTab('manage')">Manage Data</div>
+            </div>
+
+            <!-- Add Recipe Tab -->
+            <div id="recipesTab" class="tab-content active">
+                <h2>Add New Recipe</h2>
+                <form id="recipeForm">
+                    <div class="two-column">
+                        <div>
+                            <div class="form-group">
+                                <label for="recipeTitle">Recipe Title *</label>
+                                <input type="text" id="recipeTitle" required />
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="recipeCategory">Category *</label>
+                                <select id="recipeCategory" required>
+                                    <option value="">Select Category</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="recipePrepTime">Preparation Time (minutes)</label>
+                                <input type="number" id="recipePrepTime" min="1" />
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="recipeServingSize">Serving Size</label>
+                                <input type="number" id="recipeServingSize" min="1" />
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="recipeImageUrl">Image URL</label>
+                                <input type="url" id="recipeImageUrl" />
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="form-group">
+                                <label for="recipeDescription">Description</label>
+                                <textarea id="recipeDescription"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>Recipe Ingredients</h3>
+                    <div id="ingredientStatus" style="font-size: 0.9em; color: #666; margin-bottom: 10px;"></div>
+                    <div id="recipeIngredients">
+                        <!-- Ingredients will be added here -->
+                    </div>
+                    <button type="button" id="addIngredientBtn" onclick="addIngredientToRecipe()" disabled>Add Ingredient (Loading...)</button>
+
+                    <div style="margin-top: 20px;">
+                        <button type="submit">Create Recipe</button>
+                        <button type="button" onclick="clearRecipeForm()" class="secondary">Clear Form</button>
+                    </div>
+                </form>
+                <div id="recipeMessage"></div>
+            </div>
+
+            <!-- Add Ingredient Tab -->
+            <div id="ingredientsTab" class="tab-content">
+                <h2>Add New Ingredient</h2>
+                <form id="ingredientForm">
+                    <div class="form-group">
+                        <label for="ingredientName">Ingredient Name *</label>
+                        <input type="text" id="ingredientName" required />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ingredientUnit">Quantity Unit</label>
+                        <input type="text" id="ingredientUnit" placeholder="e.g., g, ml, szt, tbsp" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ingredientFodmap">FODMAP Level *</label>
+                        <select id="ingredientFodmap" required>
+                            <option value="">Select FODMAP Level</option>
+                            <option value="LOW">LOW</option>
+                            <option value="MODERATE">MODERATE</option>
+                            <option value="HIGH">HIGH</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit">Add Ingredient</button>
+                    <button type="button" onclick="clearIngredientForm()" class="secondary">Clear Form</button>
+                </form>
+                <div id="ingredientMessage"></div>
+            </div>
+
+            <!-- Manage Data Tab -->
+            <div id="manageTab" class="tab-content">
+                <h2>Manage Data</h2>
+                <div class="two-column">
+                    <div>
+                        <h3>Recent Recipes</h3>
+                        <div id="recentRecipes">Loading...</div>
+                    </div>
+                    <div>
+                        <h3>All Ingredients</h3>
+                        <div id="allIngredients">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+        let adminToken = null;
+        let categories = [];
+        let ingredients = [];
+
+        // Authentication
+        async function authenticate() {
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('authError');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/auth`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    errorDiv.textContent = data.message;
+                    return;
+                }
+                
+                adminToken = data.data.token;
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                
+                // Load initial data
+                await loadCategories();
+                await loadIngredients();
+                await loadRecentRecipes();
+
+                // Ensure ingredients are loaded before allowing recipe creation
+                if (ingredients.length === 0) {
+                    console.warn('No ingredients loaded, retrying...');
+                    await loadIngredients();
+                }
+                
+            } catch (error) {
+                errorDiv.textContent = 'Authentication failed: ' + error.message;
+            }
+        }
+
+        function logout() {
+            adminToken = null;
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('authError').textContent = '';
+        }
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load data for manage tab
+            if (tabName === 'manage') {
+                loadRecentRecipes();
+                loadAllIngredients();
+            }
+        }
+
+        // Load data functions
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/categories`);
+                const data = await response.json();
+                
+                if (!data.error) {
+                    categories = data.data;
+                    const select = document.getElementById('recipeCategory');
+                    select.innerHTML = '<option value="">Select Category</option>';
+                    
+                    categories.forEach(category => {
+                        const option = document.createElement('option');
+                        option.value = category.id;
+                        option.textContent = category.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+            }
+        }
+
+        async function loadIngredients() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/ingredients?limit=100`);
+                const data = await response.json();
+
+                if (!data.error) {
+                    ingredients = data.data;
+                    updateIngredientStatus();
+                } else {
+                    updateIngredientStatus('Error loading ingredients');
+                }
+            } catch (error) {
+                console.error('Failed to load ingredients:', error);
+                updateIngredientStatus('Error loading ingredients');
+            }
+        }
+
+        function updateIngredientStatus(errorMessage = null) {
+            const statusDiv = document.getElementById('ingredientStatus');
+            const addBtn = document.getElementById('addIngredientBtn');
+
+            if (statusDiv) {
+                if (errorMessage) {
+                    statusDiv.innerHTML = `<span style="color: red;">⚠️ ${errorMessage}</span>`;
+                    if (addBtn) {
+                        addBtn.disabled = true;
+                        addBtn.textContent = 'Add Ingredient (Error)';
+                    }
+                } else {
+                    statusDiv.innerHTML = `✅ ${ingredients.length} ingredients available for selection`;
+                    if (addBtn) {
+                        addBtn.disabled = false;
+                        addBtn.textContent = 'Add Ingredient';
+                    }
+                }
+            }
+        }
+
+        async function loadRecentRecipes() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/recipes?limit=10`);
+                const data = await response.json();
+
+                const container = document.getElementById('recentRecipes');
+                if (data.error || data.data.length === 0) {
+                    container.innerHTML = '<p>No recipes found</p>';
+                    return;
+                }
+
+                container.innerHTML = data.data.map(recipe =>
+                    `<div style="padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 4px;">
+                        <strong>${recipe.title}</strong><br>
+                        <small>Category: ${recipe.category_id} | Prep: ${recipe.preparation_time || 'N/A'} min</small>
+                    </div>`
+                ).join('');
+            } catch (error) {
+                document.getElementById('recentRecipes').innerHTML = '<p>Failed to load recipes</p>';
+            }
+        }
+
+        async function loadAllIngredients() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/ingredients?limit=100`);
+                const data = await response.json();
+
+                const container = document.getElementById('allIngredients');
+                if (data.error || data.data.length === 0) {
+                    container.innerHTML = '<p>No ingredients found</p>';
+                    return;
+                }
+
+                container.innerHTML = data.data.map(ingredient =>
+                    `<div style="padding: 5px; border-bottom: 1px solid #eee;">
+                        <strong>${ingredient.name}</strong> (${ingredient.quantity_unit || 'unit'}) -
+                        <span style="color: ${ingredient.fodmap_level === 'LOW' ? 'green' : ingredient.fodmap_level === 'MODERATE' ? 'orange' : 'red'}">
+                            ${ingredient.fodmap_level}
+                        </span>
+                    </div>`
+                ).join('');
+            } catch (error) {
+                document.getElementById('allIngredients').innerHTML = '<p>Failed to load ingredients</p>';
+            }
+        }
+
+        // Recipe ingredient management
+        function addIngredientToRecipe() {
+            // Check if ingredients are loaded
+            if (!ingredients || ingredients.length === 0) {
+                alert('Ingredients are still loading. Please wait a moment and try again.');
+                return;
+            }
+
+            const container = document.getElementById('recipeIngredients');
+            const ingredientDiv = document.createElement('div');
+            ingredientDiv.className = 'ingredient-item';
+
+            // Create select element manually instead of using innerHTML
+            const select = document.createElement('select');
+            select.className = 'ingredient-select';
+            select.setAttribute('onchange', 'handleIngredientSelect(this)');
+
+            // Add default option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Select Ingredient';
+            select.appendChild(defaultOption);
+
+            // Add new ingredient option
+            const newOption = document.createElement('option');
+            newOption.value = 'new';
+            newOption.textContent = '+ Add New Ingredient';
+            select.appendChild(newOption);
+
+            // Add ingredient options
+            ingredients.forEach((ing) => {
+                const option = document.createElement('option');
+                option.value = ing.id;
+                option.textContent = `${ing.name} (${ing.quantity_unit || 'unit'}) - ${ing.fodmap_level}`;
+                select.appendChild(option);
+            });
+
+            // Create the rest of the ingredient row elements
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.className = 'ingredient-name';
+            nameInput.placeholder = 'New ingredient name';
+            nameInput.style.display = 'none';
+
+            const fodmapSelect = document.createElement('select');
+            fodmapSelect.className = 'ingredient-fodmap';
+            fodmapSelect.style.display = 'none';
+            fodmapSelect.innerHTML = `
+                <option value="LOW">LOW</option>
+                <option value="MODERATE">MODERATE</option>
+                <option value="HIGH">HIGH</option>
+            `;
+
+            const unitInput = document.createElement('input');
+            unitInput.type = 'text';
+            unitInput.className = 'ingredient-unit';
+            unitInput.placeholder = 'Unit (g, ml, szt)';
+            unitInput.style.display = 'none';
+
+            const quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.className = 'ingredient-quantity';
+            quantityInput.placeholder = 'Quantity';
+            quantityInput.step = '0.1';
+            quantityInput.min = '0';
+
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.className = 'danger';
+            removeButton.textContent = 'Remove';
+            removeButton.setAttribute('onclick', 'removeIngredientFromRecipe(this)');
+
+            // Add all elements to the ingredient div
+            ingredientDiv.appendChild(select);
+            ingredientDiv.appendChild(nameInput);
+            ingredientDiv.appendChild(fodmapSelect);
+            ingredientDiv.appendChild(unitInput);
+            ingredientDiv.appendChild(quantityInput);
+            ingredientDiv.appendChild(removeButton);
+
+            container.appendChild(ingredientDiv);
+        }
+
+        function handleIngredientSelect(select) {
+            const ingredientDiv = select.parentElement;
+            const nameInput = ingredientDiv.querySelector('.ingredient-name');
+            const fodmapSelect = ingredientDiv.querySelector('.ingredient-fodmap');
+            const unitInput = ingredientDiv.querySelector('.ingredient-unit');
+
+            if (select.value === 'new') {
+                nameInput.style.display = 'block';
+                fodmapSelect.style.display = 'block';
+                unitInput.style.display = 'block';
+                nameInput.required = true;
+            } else {
+                nameInput.style.display = 'none';
+                fodmapSelect.style.display = 'none';
+                unitInput.style.display = 'none';
+                nameInput.required = false;
+            }
+        }
+
+        function removeIngredientFromRecipe(button) {
+            button.parentElement.remove();
+        }
+
+        // Form submissions
+        document.getElementById('recipeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const messageDiv = document.getElementById('recipeMessage');
+            messageDiv.innerHTML = '<p>Creating recipe...</p>';
+
+            try {
+                // Collect recipe data
+                const recipeData = {
+                    title: document.getElementById('recipeTitle').value,
+                    description: document.getElementById('recipeDescription').value,
+                    preparation_time: parseInt(document.getElementById('recipePrepTime').value) || null,
+                    serving_size: parseInt(document.getElementById('recipeServingSize').value) || null,
+                    image_url: document.getElementById('recipeImageUrl').value || null,
+                    category_id: parseInt(document.getElementById('recipeCategory').value),
+                    created_by: 'admin',
+                    ingredients: []
+                };
+
+                // Process ingredients
+                const ingredientItems = document.querySelectorAll('.ingredient-item');
+                for (const item of ingredientItems) {
+                    const select = item.querySelector('.ingredient-select');
+                    const quantity = parseFloat(item.querySelector('.ingredient-quantity').value);
+
+                    if (!quantity || quantity <= 0) continue;
+
+                    if (select.value === 'new') {
+                        // Create new ingredient first
+                        const newIngredientData = {
+                            name: item.querySelector('.ingredient-name').value,
+                            fodmap_level: item.querySelector('.ingredient-fodmap').value,
+                            quantity_unit: item.querySelector('.ingredient-unit').value || 'unit'
+                        };
+
+                        const ingredientResponse = await fetch(`${API_BASE_URL}/ingredients`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(newIngredientData)
+                        });
+
+                        const ingredientResult = await ingredientResponse.json();
+                        if (ingredientResult.error) {
+                            throw new Error(`Failed to create ingredient: ${ingredientResult.message}`);
+                        }
+
+                        recipeData.ingredients.push({
+                            ingredient_id: ingredientResult.data.id,
+                            quantity: quantity
+                        });
+                    } else if (select.value) {
+                        recipeData.ingredients.push({
+                            ingredient_id: parseInt(select.value),
+                            quantity: quantity
+                        });
+                    }
+                }
+
+                // Create recipe
+                const response = await fetch(`${API_BASE_URL}/recipes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(recipeData)
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    messageDiv.innerHTML = `<p class="error">Error: ${result.message}</p>`;
+                } else {
+                    messageDiv.innerHTML = `<p class="success">Recipe "${result.data.title}" created successfully!</p>`;
+                    clearRecipeForm();
+                    await loadIngredients(); // Refresh ingredients list
+                }
+
+            } catch (error) {
+                messageDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+
+        document.getElementById('ingredientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const messageDiv = document.getElementById('ingredientMessage');
+            messageDiv.innerHTML = '<p>Adding ingredient...</p>';
+
+            try {
+                const ingredientData = {
+                    name: document.getElementById('ingredientName').value,
+                    quantity_unit: document.getElementById('ingredientUnit').value || 'unit',
+                    fodmap_level: document.getElementById('ingredientFodmap').value
+                };
+
+                const response = await fetch(`${API_BASE_URL}/ingredients`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(ingredientData)
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    messageDiv.innerHTML = `<p class="error">Error: ${result.message}</p>`;
+                } else {
+                    messageDiv.innerHTML = `<p class="success">Ingredient "${result.data.name}" added successfully!</p>`;
+                    clearIngredientForm();
+                    await loadIngredients(); // Refresh ingredients list
+                }
+
+            } catch (error) {
+                messageDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            }
+        });
+
+        // Form clearing functions
+        function clearRecipeForm() {
+            document.getElementById('recipeForm').reset();
+            document.getElementById('recipeIngredients').innerHTML = '';
+            document.getElementById('recipeMessage').innerHTML = '';
+        }
+
+        function clearIngredientForm() {
+            document.getElementById('ingredientForm').reset();
+            document.getElementById('ingredientMessage').innerHTML = '';
+        }
+
+        // Initialize with one ingredient field
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto-focus password field
+            document.getElementById('adminPassword').focus();
+
+            // Allow Enter key to login
+            document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    authenticate();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

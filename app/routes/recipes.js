@@ -105,6 +105,7 @@ router.get('/',
         r.image_url,
         r.created_at,
         r.updated_at,
+        r.category_id,
         c.name as category_name,
         COUNT(DISTINCT ri.ingredient_id) as ingredient_count,
         COUNT(DISTINCT rt.tag_id) as tag_count
@@ -113,7 +114,7 @@ router.get('/',
       LEFT JOIN recipe_ingredients ri ON r.id = ri.recipe_id
       LEFT JOIN recipe_tags rt ON r.id = rt.recipe_id
       ${finalWhereClause}
-      GROUP BY r.id, c.name
+      GROUP BY r.id, r.category_id, c.name
       ORDER BY r.created_at DESC
       LIMIT $${finalParams.length + 1} OFFSET $${finalParams.length + 2}
     `;

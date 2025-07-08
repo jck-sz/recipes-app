@@ -38,16 +38,21 @@ npx http-server -p 3001
 
 ### 4. Access the Application
 - **Frontend**: http://localhost:3001/simple.html
+- **Admin Panel**: http://localhost:3001/admin.html (Password: `Dupadupa123`)
 - **API**: http://localhost:3000
 - **Health Check**: http://localhost:3000/health
 
 ## 📱 Application Features
 
 ### Frontend Functionality
-- **Recipe Display**: View all recipes from the database
-- **Ingredient Browser**: View all ingredients with FODMAP levels (LOW/MODERATE/HIGH)
-- **Navigation**: Switch between recipes and ingredients with buttons
-- **Responsive Design**: Works on desktop and mobile devices
+- **Recipe Display by Category**: Recipes organized by meal type (Śniadanie, Obiad, Kolacja, Przekąska)
+- **Complete Recipe Information**: Title, description, prep time, serving size, and full ingredient lists
+- **Ingredient Details**: Each recipe shows ingredients with quantities, units, and FODMAP levels
+- **FODMAP Level Indicators**: Color-coded badges (LOW=green, MODERATE=yellow, HIGH=red)
+- **Ingredient Browser**: Grid view of all ingredients with FODMAP levels and units
+- **Modern UI Design**: Gradient backgrounds, glassmorphism effects, and smooth animations
+- **Admin Panel**: Enhanced password-protected interface for recipe and ingredient management
+- **Responsive Design**: Mobile-first design that works perfectly on all devices
 
 ### Backend API
 - **Complete CRUD operations** for recipes, ingredients, categories, and tags
@@ -82,8 +87,18 @@ npm run shell:db
 ### Frontend Development
 The frontend uses a simple HTML/JavaScript approach for maximum compatibility:
 - **Main app**: `frontend/simple.html` (recommended)
+- **Admin panel**: `frontend/admin.html` (password-protected recipe management)
 - **Angular version**: `frontend/index.html` (has SystemJS loading issues)
 - **API testing**: `frontend/test.html`
+
+### Admin Panel Features
+The admin panel (`http://localhost:3001/admin.html`) provides:
+- **Password Protection**: Secure access with configurable password
+- **Recipe Management**: Add new recipes with ingredients and details
+- **Ingredient Management**: Add new ingredients with FODMAP levels
+- **Dynamic Ingredient Addition**: Create new ingredients while adding recipes
+- **Data Overview**: View existing recipes and ingredients
+- **Form Validation**: Comprehensive input validation and error handling
 
 ### Making Changes
 1. **Backend changes**: Code is automatically reloaded in Docker container

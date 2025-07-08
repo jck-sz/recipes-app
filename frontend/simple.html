@@ -3,135 +3,606 @@
 <head>
     <meta charset="utf-8">
     <title>FODMAP Recipe App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
-        .loading { color: #666; font-style: italic; }
-        .error { color: red; }
-        .ingredient { margin: 5px 0; padding: 5px; background: #f5f5f5; border-radius: 3px; }
-        .recipe { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 3px; }
-        .fodmap-low { color: green; font-weight: bold; }
-        .fodmap-moderate { color: orange; font-weight: bold; }
-        .fodmap-high { color: red; font-weight: bold; }
-        button { padding: 10px 20px; margin: 10px 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .active { background: #28a745; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 0;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .btn-admin {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn.active {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            margin: 2rem 0;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .category-section {
+            margin: 2rem 0;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            color: #495057;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .recipe-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .recipe-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .recipe-description {
+            color: #6c757d;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            background: #f8f9fa;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: #495057;
+        }
+
+        .ingredients-section {
+            margin-top: 1rem;
+        }
+
+        .ingredients-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.75rem;
+        }
+
+        .ingredients-list {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .ingredient-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+        }
+
+        .ingredient-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .ingredient-quantity {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .fodmap-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .fodmap-low {
+            background: #d4edda;
+            color: #155724;
+            border-left-color: #28a745;
+        }
+
+        .fodmap-moderate {
+            background: #fff3cd;
+            color: #856404;
+            border-left-color: #ffc107;
+        }
+
+        .fodmap-high {
+            background: #f8d7da;
+            color: #721c24;
+            border-left-color: #dc3545;
+        }
+
+        .ingredient-item.fodmap-low {
+            border-left-color: #28a745;
+        }
+
+        .ingredient-item.fodmap-moderate {
+            border-left-color: #ffc107;
+        }
+
+        .ingredient-item.fodmap-high {
+            border-left-color: #dc3545;
+        }
+
+        .ingredients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .ingredient-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .ingredient-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .section {
+                padding: 1.5rem;
+            }
+
+            .recipes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recipe-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>FODMAP Recipe App</h1>
-        
-        <div>
-            <button id="recipesBtn" onclick="showRecipes()" class="active">Show Recipes</button>
-            <button id="ingredientsBtn" onclick="showIngredients()">Show Ingredients</button>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">🍽️ FODMAP Recipes</div>
+            <nav class="nav-buttons">
+                <button id="recipesBtn" onclick="showRecipes()" class="btn btn-primary active">📖 Recipes</button>
+                <button id="ingredientsBtn" onclick="showIngredients()" class="btn btn-secondary">🥕 Ingredients</button>
+                <button onclick="openAdmin()" class="btn btn-admin">⚙️ Admin Panel</button>
+            </nav>
         </div>
+    </header>
 
+    <div class="container">
         <div id="recipesSection" class="section">
-            <h2>Recipes</h2>
+            <h2 class="section-title">Recipe Collection by Category</h2>
             <div id="recipesContent">
-                <div class="loading">Loading recipes...</div>
+                <div class="loading">🍳 Loading delicious recipes...</div>
             </div>
         </div>
 
         <div id="ingredientsSection" class="section" style="display: none;">
-            <h2>Ingredients with FODMAP Levels</h2>
+            <h2 class="section-title">Ingredients & FODMAP Levels</h2>
             <div id="ingredientsContent">
-                <div class="loading">Loading ingredients...</div>
+                <div class="loading">🥬 Loading ingredients...</div>
             </div>
         </div>
     </div>
 
     <script>
         const API_BASE_URL = 'http://localhost:3000';
-        
+
         let currentSection = 'recipes';
-        
+        let categories = [];
+        let recipes = [];
+        let ingredients = [];
+
         function showRecipes() {
             currentSection = 'recipes';
             document.getElementById('recipesSection').style.display = 'block';
             document.getElementById('ingredientsSection').style.display = 'none';
             document.getElementById('recipesBtn').classList.add('active');
+            document.getElementById('recipesBtn').classList.remove('btn-secondary');
+            document.getElementById('recipesBtn').classList.add('btn-primary');
             document.getElementById('ingredientsBtn').classList.remove('active');
-            loadRecipes();
+            document.getElementById('ingredientsBtn').classList.remove('btn-primary');
+            document.getElementById('ingredientsBtn').classList.add('btn-secondary');
+            loadRecipesWithIngredients();
         }
-        
+
         function showIngredients() {
             currentSection = 'ingredients';
             document.getElementById('recipesSection').style.display = 'none';
             document.getElementById('ingredientsSection').style.display = 'block';
             document.getElementById('recipesBtn').classList.remove('active');
+            document.getElementById('recipesBtn').classList.remove('btn-primary');
+            document.getElementById('recipesBtn').classList.add('btn-secondary');
             document.getElementById('ingredientsBtn').classList.add('active');
+            document.getElementById('ingredientsBtn').classList.remove('btn-secondary');
+            document.getElementById('ingredientsBtn').classList.add('btn-primary');
             loadIngredients();
         }
         
-        async function loadRecipes() {
+        async function loadRecipesWithIngredients() {
             const content = document.getElementById('recipesContent');
-            content.innerHTML = '<div class="loading">Loading recipes...</div>';
-            
+            content.innerHTML = '<div class="loading">🍳 Loading delicious recipes...</div>';
+
             try {
-                const response = await fetch(`${API_BASE_URL}/recipes`);
-                const data = await response.json();
-                
-                if (data.error) {
-                    content.innerHTML = `<div class="error">Error: ${data.message}</div>`;
+                // Load all required data
+                await Promise.all([
+                    loadCategories(),
+                    loadAllRecipes(),
+                    loadAllIngredients()
+                ]);
+
+                if (recipes.length === 0) {
+                    content.innerHTML = '<div class="error">No recipes found. Use the admin panel to add some recipes!</div>';
                     return;
                 }
-                
-                if (data.data.length === 0) {
-                    content.innerHTML = '<div>No recipes found. The database is empty.</div>';
-                    return;
-                }
-                
+
+                // Group recipes by category
+                const recipesByCategory = groupRecipesByCategory();
+
+                // Load recipe ingredients for all recipes
+                await loadRecipeIngredients();
+
+                // Generate HTML for each category
                 let html = '';
-                data.data.forEach(recipe => {
-                    html += `
-                        <div class="recipe">
-                            <h3>${recipe.title}</h3>
-                            ${recipe.description ? `<p>${recipe.description}</p>` : ''}
-                            ${recipe.preparation_time ? `<p><strong>Prep time:</strong> ${recipe.preparation_time} minutes</p>` : ''}
-                            ${recipe.serving_size ? `<p><strong>Serves:</strong> ${recipe.serving_size}</p>` : ''}
-                        </div>
-                    `;
-                });
-                content.innerHTML = html;
-                
+                for (const category of categories) {
+                    const categoryRecipes = recipesByCategory[category.id] || [];
+                    if (categoryRecipes.length > 0) {
+                        html += generateCategorySection(category, categoryRecipes);
+                    }
+                }
+
+                if (html === '') {
+                    content.innerHTML = '<div class="error">No recipes found in any category.</div>';
+                } else {
+                    content.innerHTML = html;
+                }
+
             } catch (error) {
                 content.innerHTML = `<div class="error">Failed to load recipes: ${error.message}</div>`;
                 console.error('Error loading recipes:', error);
             }
         }
+
+        async function loadCategories() {
+            const response = await fetch(`${API_BASE_URL}/categories`);
+            const data = await response.json();
+            if (!data.error) {
+                categories = data.data;
+            }
+        }
+
+        async function loadAllRecipes() {
+            const response = await fetch(`${API_BASE_URL}/recipes?limit=100`);
+            const data = await response.json();
+            if (!data.error) {
+                recipes = data.data;
+            }
+        }
+
+        async function loadAllIngredients() {
+            const response = await fetch(`${API_BASE_URL}/ingredients?limit=100`);
+            const data = await response.json();
+            if (!data.error) {
+                ingredients = data.data;
+            }
+        }
+
+        let recipeIngredients = {};
+
+        async function loadRecipeIngredients() {
+            // Load ingredients for all recipes
+            for (const recipe of recipes) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/recipes/${recipe.id}/ingredients`);
+                    const data = await response.json();
+                    if (!data.error) {
+                        recipeIngredients[recipe.id] = data.data;
+                    } else {
+                        recipeIngredients[recipe.id] = [];
+                    }
+                } catch (error) {
+                    console.error(`Error loading ingredients for recipe ${recipe.id}:`, error);
+                    recipeIngredients[recipe.id] = [];
+                }
+            }
+        }
+
+        function groupRecipesByCategory() {
+            const grouped = {};
+            recipes.forEach(recipe => {
+                const categoryId = recipe.category_id;
+                if (!grouped[categoryId]) {
+                    grouped[categoryId] = [];
+                }
+                grouped[categoryId].push(recipe);
+            });
+            return grouped;
+        }
+
+        function generateCategorySection(category, categoryRecipes) {
+            const categoryEmojis = {
+                'Śniadanie': '🌅',
+                'Obiad': '🍽️',
+                'Kolacja': '🌙',
+                'Przekąska': '🍪'
+            };
+
+            const emoji = categoryEmojis[category.name] || '🍴';
+
+            let html = `
+                <div class="category-section">
+                    <h3 class="category-title">${emoji} ${category.name}</h3>
+                    <div class="recipes-grid">
+            `;
+
+            for (const recipe of categoryRecipes) {
+                html += generateRecipeCard(recipe);
+            }
+
+            html += `
+                    </div>
+                </div>
+            `;
+
+            return html;
+        }
+
+        function generateRecipeCard(recipe) {
+            // Get recipe ingredients from loaded data
+            const ingredientsList = recipeIngredients[recipe.id] || [];
+
+            let html = `
+                <div class="recipe-card">
+                    <div class="recipe-title">${recipe.title}</div>
+            `;
+
+            if (recipe.description) {
+                html += `<div class="recipe-description">${recipe.description}</div>`;
+            }
+
+            // Recipe meta information
+            html += '<div class="recipe-meta">';
+            if (recipe.preparation_time) {
+                html += `<span class="meta-item">⏱️ ${recipe.preparation_time} min</span>`;
+            }
+            if (recipe.serving_size) {
+                html += `<span class="meta-item">👥 Serves ${recipe.serving_size}</span>`;
+            }
+            html += '</div>';
+
+            // Ingredients section
+            if (ingredientsList.length > 0) {
+                html += `
+                    <div class="ingredients-section">
+                        <div class="ingredients-title">🥘 Ingredients</div>
+                        <div class="ingredients-list">
+                `;
+
+                ingredientsList.forEach(item => {
+                    const ingredient = ingredients.find(ing => ing.id === item.ingredient_id);
+                    if (ingredient) {
+                        const fodmapClass = `fodmap-${ingredient.fodmap_level.toLowerCase()}`;
+                        html += `
+                            <div class="ingredient-item ${fodmapClass}">
+                                <span class="ingredient-name">${ingredient.name}</span>
+                                <div>
+                                    <span class="ingredient-quantity">${item.quantity} ${ingredient.quantity_unit || 'unit'}</span>
+                                    <span class="fodmap-badge fodmap-${ingredient.fodmap_level.toLowerCase()}">${ingredient.fodmap_level}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += '</div>';
+            return html;
+        }
         
         async function loadIngredients() {
             const content = document.getElementById('ingredientsContent');
-            content.innerHTML = '<div class="loading">Loading ingredients...</div>';
-            
+            content.innerHTML = '<div class="loading">🥬 Loading ingredients...</div>';
+
             try {
                 const response = await fetch(`${API_BASE_URL}/ingredients?limit=100`);
                 const data = await response.json();
-                
+
                 if (data.error) {
                     content.innerHTML = `<div class="error">Error: ${data.message}</div>`;
                     return;
                 }
-                
+
                 if (data.data.length === 0) {
-                    content.innerHTML = '<div>No ingredients found.</div>';
+                    content.innerHTML = '<div class="error">No ingredients found. Use the admin panel to add some ingredients!</div>';
                     return;
                 }
-                
-                let html = '';
+
+                let html = '<div class="ingredients-grid">';
                 data.data.forEach(ingredient => {
                     const fodmapClass = `fodmap-${ingredient.fodmap_level.toLowerCase()}`;
                     html += `
-                        <div class="ingredient">
-                            <strong>${ingredient.name}</strong> 
-                            (${ingredient.quantity_unit || 'unit'}) - 
-                            <span class="${fodmapClass}">${ingredient.fodmap_level}</span>
+                        <div class="ingredient-card ${fodmapClass}">
+                            <div>
+                                <div class="ingredient-name">${ingredient.name}</div>
+                                <div class="ingredient-quantity">Unit: ${ingredient.quantity_unit || 'unit'}</div>
+                            </div>
+                            <span class="fodmap-badge ${fodmapClass}">${ingredient.fodmap_level}</span>
                         </div>
                     `;
                 });
+                html += '</div>';
                 content.innerHTML = html;
                 
             } catch (error) {
@@ -140,9 +611,13 @@
             }
         }
         
+        function openAdmin() {
+            window.open('admin.html', '_blank');
+        }
+
         // Load recipes by default when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            loadRecipes();
+            loadRecipesWithIngredients();
         });
     </script>
 </body>

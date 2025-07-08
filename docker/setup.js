@@ -38,9 +38,10 @@ DB_IDLE_TIMEOUT=30000
 DB_CONNECTION_TIMEOUT=10000
 
 # Security Settings
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080,http://localhost:8000
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001,http://localhost:8080,http://localhost:8000
 RATE_LIMIT_WINDOW_MS=900000
 RATE_LIMIT_MAX_REQUESTS=1000
+ADMIN_PASSWORD=Dupadupa123
 
 # Logging
 LOG_LEVEL=debug
@@ -104,34 +105,11 @@ const waitForHealth = () => {
 waitForHealth()
     .then(() => {
         console.log('');
-        console.log('🔧 Setting up database user...');
-
-        // Create the application user in the database
-        try {
-            const createUserSQL = `
-                DO $$
-                BEGIN
-                    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'recipes_user') THEN
-                        CREATE USER recipes_user WITH PASSWORD '${APP_DB_PASSWORD}';
-                        GRANT ALL PRIVILEGES ON DATABASE fodmap_db TO recipes_user;
-                        GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO recipes_user;
-                        GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO recipes_user;
-                        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO recipes_user;
-                        ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO recipes_user;
-                    END IF;
-                END
-                $$;
-            `;
-
-            execSync(`docker-compose exec -T db psql -U postgres -d fodmap_db -c "${createUserSQL.replace(/"/g, '\\"')}"`, { stdio: 'inherit' });
-            console.log('✅ Database user created successfully!');
-        } catch (error) {
-            console.log('⚠️  Warning: Could not create database user automatically');
-            console.log('   The user might already exist or there was a connection issue');
-        }
-
-        console.log('');
         console.log('🎉 FODMAP Docker environment is ready!');
+        console.log('');
+        console.log('✅ Database user created automatically during initialization');
+        console.log('✅ Database schema and sample data loaded');
+        console.log('✅ API connected to database successfully');
         console.log('');
         console.log('📡 Available endpoints:');
         console.log('   • API: http://localhost:3000');
@@ -151,6 +129,9 @@ waitForHealth()
         console.log('');
         console.log('💡 Both database AND backend are now running in Docker!');
         console.log('   Your code changes will auto-reload thanks to volume mounting.');
+        console.log('');
+        console.log('🔒 Database user persists across container restarts');
+        console.log('   No manual user creation needed anymore!');
     })
     .catch((error) => {
         console.log('⚠️  Services took longer than expected to start');

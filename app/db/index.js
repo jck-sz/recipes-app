@@ -26,9 +26,14 @@ const poolConfig = {
 const pool = new Pool(poolConfig);
 
 // Enhanced connection monitoring and error handling
-pool.on('connect', () => {
+pool.on('connect', (client) => {
   console.log('New client connected to PostgreSQL database');
   console.log(`Pool status: ${pool.totalCount} total, ${pool.idleCount} idle, ${pool.waitingCount} waiting`);
+
+  // Set up client-level error handling
+  client.on('error', (err) => {
+    console.error('PostgreSQL client error:', err);
+  });
 });
 
 pool.on('acquire', () => {
@@ -51,7 +56,34 @@ pool.on('error', (err, client) => {
   if (client) {
     console.error('Error occurred on client:', client.processID);
   }
+
+  // Attempt to reconnect if the error is connection-related
+  if (err.code === 'ECONNRESET' || err.code === 'ENOTFOUND' || err.code === 'ECONNREFUSED') {
+    console.log('Connection error detected, pool will attempt to reconnect...');
+  }
 });
+
+// Database health check function
+const checkConnection = async () => {
+  try {
+    const result = await pool.query('SELECT 1 as health_check, NOW() as timestamp');
+    return {
+      healthy: true,
+      timestamp: result.rows[0].timestamp,
+      poolStatus: {
+        totalCount: pool.totalCount,
+        idleCount: pool.idleCount,
+        waitingCount: pool.waitingCount
+      }
+    };
+  } catch (error) {
+    return {
+      healthy: false,
+      error: error.message,
+      code: error.code
+    };
+  }
+};
 
 // Graceful pool shutdown function
 const closePool = async () => {
@@ -65,19 +97,54 @@ const closePool = async () => {
   }
 };
 
-// Query function with logging
-const query = async (text, params) => {
+// Query function with logging and retry logic
+const query = async (text, params, retries = 3) => {
   const start = Date.now();
-  try {
-    const result = await pool.query(text, params);
-    const duration = Date.now() - start;
-    console.log('Executed query', { text, duration, rows: result.rowCount });
-    return result;
-  } catch (error) {
-    const duration = Date.now() - start;
-    console.error('Query error', { text, duration, error: error.message });
-    throw error;
+  let lastError;
+
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const result = await pool.query(text, params);
+      const duration = Date.now() - start;
+
+      if (attempt > 1) {
+        console.log(`Query succeeded on attempt ${attempt}`, { text, duration, rows: result.rowCount });
+      } else {
+        console.log('Executed query', { text, duration, rows: result.rowCount });
+      }
+
+      return result;
+    } catch (error) {
+      lastError = error;
+      const duration = Date.now() - start;
+
+      // Check if this is a connection error that might benefit from retry
+      const isRetryableError = error.code === 'ECONNRESET' ||
+                              error.code === 'ENOTFOUND' ||
+                              error.code === 'ECONNREFUSED' ||
+                              error.code === '57P01' || // admin_shutdown
+                              error.code === '57P02' || // crash_shutdown
+                              error.code === '57P03';   // cannot_connect_now
+
+      if (isRetryableError && attempt < retries) {
+        console.warn(`Query failed on attempt ${attempt}, retrying...`, {
+          text,
+          duration,
+          error: error.message,
+          code: error.code
+        });
+
+        // Wait before retrying (exponential backoff)
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000));
+        continue;
+      }
+
+      console.error('Query error', { text, duration, error: error.message, attempt });
+      break;
+    }
   }
+
+  throw lastError;
 };
 
 // Transaction wrapper
@@ -100,5 +167,6 @@ module.exports = {
   pool,
   query,
   withTransaction,
-  closePool
+  closePool,
+  checkConnection
 };

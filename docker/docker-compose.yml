@@ -11,7 +11,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../migrations/init-complete.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../migrations/01-create-user.sh:/docker-entrypoint-initdb.d/01-create-user.sh
+      - ../migrations/02-init-schema.sql:/docker-entrypoint-initdb.d/02-init-schema.sql
     ports:
       - "5432:5432"
     healthcheck:
