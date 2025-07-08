@@ -3,9 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <title>Recipes App</title>
-    <base href="/" />
+    <base href="./" />
+    <!-- Polyfills required by Angular -->
     <script src="https://unpkg.com/zone.js@0.11.4/dist/zone.min.js"></script>
+    <!-- SystemJS loads Angular libraries from the CDN and transpiles TypeScript in the browser -->
     <script src="https://unpkg.com/systemjs@0.21.6/dist/system.js"></script>
+    <script src="https://unpkg.com/plugin-typescript@8.0.0/lib/plugin.js"></script>
+    <script src="https://unpkg.com/typescript@4.5.4/lib/typescript.js"></script>
     <script src="systemjs.config.js"></script>
     <script>
       System.import('app').catch(function (err) { console.error(err); });

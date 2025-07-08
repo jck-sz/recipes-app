@@ -19,11 +19,12 @@ TypeScript is transpiled in the browser using SystemJS.
    npm install                 # first time only
    npm start
    ```
-2. In another terminal, serve this folder:
+2. In another terminal, **serve the `frontend` directory**:
    ```bash
    cd ../frontend
    npx http-server -p 3001
    ```
+   Make sure the command is executed from inside `frontend` so the `app/` folder is accessible.
    Any simple static server will work (e.g. `python3 -m http.server 3001`).
 
 3. Open `http://localhost:3001` in your browser. You should see a list of recipe
