@@ -14,10 +14,12 @@
       'typescript': 'npm:typescript@4.5.4/lib/typescript.js',
       '@angular/core': 'npm:@angular/core@12/bundles/core.umd.js',
       '@angular/common': 'npm:@angular/common@12/bundles/common.umd.js',
+      '@angular/common/http': 'npm:@angular/common@12/bundles/common-http.umd.js',
       '@angular/compiler': 'npm:@angular/compiler@12/bundles/compiler.umd.js',
       '@angular/platform-browser': 'npm:@angular/platform-browser@12/bundles/platform-browser.umd.js',
       '@angular/platform-browser-dynamic': 'npm:@angular/platform-browser-dynamic@12/bundles/platform-browser-dynamic.umd.js',
       'rxjs': 'npm:rxjs@6.6.7',
+      'rxjs/operators': 'npm:rxjs@6.6.7/operators/index.js',
       'tslib': 'npm:tslib@2.3.0/tslib.es6.js'
     },
     packages: {
