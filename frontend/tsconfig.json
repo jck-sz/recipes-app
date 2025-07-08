@@ -10,7 +10,7 @@
     "skipLibCheck": true
   },
   "files": [
-    "main.ts",
+    "app/main.ts",
     "app/app.module.ts",
     "app/app.component.ts",
     "app/recipe.service.ts"
