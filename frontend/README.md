@@ -28,6 +28,8 @@ TypeScript is transpiled in the browser using SystemJS.
 
 3. Open `http://localhost:3001` in your browser. You should see a list of recipe
    titles loaded from the backend.
+   Use the **View Ingredients** button to navigate to the page listing all
+   ingredients with their FODMAP levels.
 
 ### Changing the API URL
 

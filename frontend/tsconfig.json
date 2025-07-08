@@ -13,6 +13,9 @@
     "app/main.ts",
     "app/app.module.ts",
     "app/app.component.ts",
-    "app/recipe.service.ts"
+    "app/recipes.component.ts",
+    "app/ingredients.component.ts",
+    "app/recipe.service.ts",
+    "app/ingredient.service.ts"
   ]
 }

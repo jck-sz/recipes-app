@@ -18,6 +18,7 @@
       '@angular/compiler': 'npm:@angular/compiler@12/bundles/compiler.umd.js',
       '@angular/platform-browser': 'npm:@angular/platform-browser@12/bundles/platform-browser.umd.js',
       '@angular/platform-browser-dynamic': 'npm:@angular/platform-browser-dynamic@12/bundles/platform-browser-dynamic.umd.js',
+      '@angular/router': 'npm:@angular/router@12/bundles/router.umd.js',
       'rxjs': 'npm:rxjs@6.6.7',
       'rxjs/operators': 'npm:rxjs@6.6.7/operators/index.js',
       'tslib': 'npm:tslib@2.3.0/tslib.es6.js'
