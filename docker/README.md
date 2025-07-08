@@ -27,8 +27,9 @@ chmod +x setup.sh
 
 **That's it!** The setup script will:
 - ✅ Generate secure random passwords automatically
-- ✅ Create the `.env` file
+- ✅ Create the `.env` file with CORS configuration
 - ✅ Start all Docker services (database + backend)
+- ✅ Create database user with proper permissions
 - ✅ Wait for services to be healthy
 - ✅ Show you the endpoints when ready
 - ✅ Enable hot reload for development
@@ -122,9 +123,34 @@ This setup is configured for production use. For development:
 
 ## Troubleshooting
 
-1. **Database connection issues**: Ensure the database is healthy before the API starts
-2. **Port conflicts**: Change ports in docker-compose.yml if 3000 or 5432 are in use
-3. **Permission issues**: The API runs as non-root user for security
+### Common Issues
+
+1. **Database connection issues**:
+   - Ensure the database is healthy before the API starts
+   - If authentication fails, run: `docker-compose down -v && npm run setup`
+
+2. **Port conflicts**:
+   - Backend uses port 3000, database uses port 5432
+   - Change ports in docker-compose.yml if these ports are in use
+
+3. **CORS errors from frontend**:
+   - Frontend must run on port 3001 (automatically configured)
+   - CORS origins are set in `.env` file: `ALLOWED_ORIGINS`
+
+4. **Environment variables not updating**:
+   - Stop containers completely: `docker-compose down`
+   - Restart: `docker-compose up -d`
+   - Environment changes require container restart
+
+5. **Database user creation fails**:
+   - The setup script automatically creates `recipes_user`
+   - If manual creation needed: `docker-compose exec db psql -U postgres -d fodmap_db`
+
+### Reset Everything
+```bash
+docker-compose down -v  # Removes all data and volumes
+npm run setup           # Recreates everything from scratch
+```
 
 ## Data Persistence
 

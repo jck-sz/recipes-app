@@ -3,3 +3,5 @@ node_modules/
 .DS_Store
 docker-data/
 *.log
+CHANGELOG.md
+SETUP_GUIDE.md

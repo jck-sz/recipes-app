@@ -1,5 +1,5 @@
 -- Create application user
--- Note: We'll create this user manually after container starts since we can't access env vars in SQL
+-- Note: This will be created by the setup script after container starts
 
 -- Create tables with complete schema
 CREATE TABLE IF NOT EXISTS categories (

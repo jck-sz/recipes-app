@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "system",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "lib": ["dom", "es2015"],
+    "outDir": "./dist",
+    "skipLibCheck": true
+  },
+  "files": [
+    "app/main.ts",
+    "app/app.module.ts",
+    "app/app.component.ts",
+    "app/recipes.component.ts",
+    "app/ingredients.component.ts",
+    "app/recipe.service.ts",
+    "app/ingredient.service.ts"
+  ]
+}
