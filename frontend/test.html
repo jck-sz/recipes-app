@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>FODMAP API Test</h1>
+    <button onclick="testRecipes()">Test Recipes API</button>
+    <button onclick="testIngredients()">Test Ingredients API</button>
+    <div id="results"></div>
+
+    <script>
+        async function testRecipes() {
+            try {
+                const response = await fetch('http://localhost:3000/recipes');
+                const data = await response.json();
+                document.getElementById('results').innerHTML = '<h3>Recipes:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<h3>Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+
+        async function testIngredients() {
+            try {
+                const response = await fetch('http://localhost:3000/ingredients?limit=100');
+                const data = await response.json();
+                document.getElementById('results').innerHTML = '<h3>Ingredients:</h3><pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<h3>Error:</h3><pre>' + error.message + '</pre>';
+            }
+        }
+    </script>
+</body>
+</html>

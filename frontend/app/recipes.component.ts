@@ -25,14 +25,16 @@ export class RecipesComponent implements OnInit {
   constructor(private recipeService: RecipeService, private router: Router) {}
 
   ngOnInit() {
+    console.log('RecipesComponent ngOnInit called');
     this.recipeService.getRecipes().subscribe({
       next: (res: any) => {
+        console.log('Recipes response:', res);
         this.recipes = res.data;
         this.loading = false;
       },
       error: (err) => {
-        console.error(err);
-        this.error = 'Failed to load recipes';
+        console.error('Recipes error:', err);
+        this.error = 'Failed to load recipes: ' + err.message;
         this.loading = false;
       }
     });

@@ -12,7 +12,10 @@
     <script src="https://unpkg.com/typescript@4.5.4/lib/typescript.js"></script>
     <script src="systemjs.config.js"></script>
     <script>
-      System.import('app').catch(function (err) { console.error(err); });
+      console.log('Starting Angular app...');
+      System.import('app').catch(function (err) {
+        console.error('Failed to load app:', err);
+      });
     </script>
   </head>
   <body>

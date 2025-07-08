@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FODMAP Recipe App</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .loading { color: #666; font-style: italic; }
+        .error { color: red; }
+        .ingredient { margin: 5px 0; padding: 5px; background: #f5f5f5; border-radius: 3px; }
+        .recipe { margin: 10px 0; padding: 10px; background: #f9f9f9; border-radius: 3px; }
+        .fodmap-low { color: green; font-weight: bold; }
+        .fodmap-moderate { color: orange; font-weight: bold; }
+        .fodmap-high { color: red; font-weight: bold; }
+        button { padding: 10px 20px; margin: 10px 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .active { background: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FODMAP Recipe App</h1>
+        
+        <div>
+            <button id="recipesBtn" onclick="showRecipes()" class="active">Show Recipes</button>
+            <button id="ingredientsBtn" onclick="showIngredients()">Show Ingredients</button>
+        </div>
+
+        <div id="recipesSection" class="section">
+            <h2>Recipes</h2>
+            <div id="recipesContent">
+                <div class="loading">Loading recipes...</div>
+            </div>
+        </div>
+
+        <div id="ingredientsSection" class="section" style="display: none;">
+            <h2>Ingredients with FODMAP Levels</h2>
+            <div id="ingredientsContent">
+                <div class="loading">Loading ingredients...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+        
+        let currentSection = 'recipes';
+        
+        function showRecipes() {
+            currentSection = 'recipes';
+            document.getElementById('recipesSection').style.display = 'block';
+            document.getElementById('ingredientsSection').style.display = 'none';
+            document.getElementById('recipesBtn').classList.add('active');
+            document.getElementById('ingredientsBtn').classList.remove('active');
+            loadRecipes();
+        }
+        
+        function showIngredients() {
+            currentSection = 'ingredients';
+            document.getElementById('recipesSection').style.display = 'none';
+            document.getElementById('ingredientsSection').style.display = 'block';
+            document.getElementById('recipesBtn').classList.remove('active');
+            document.getElementById('ingredientsBtn').classList.add('active');
+            loadIngredients();
+        }
+        
+        async function loadRecipes() {
+            const content = document.getElementById('recipesContent');
+            content.innerHTML = '<div class="loading">Loading recipes...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/recipes`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    content.innerHTML = `<div class="error">Error: ${data.message}</div>`;
+                    return;
+                }
+                
+                if (data.data.length === 0) {
+                    content.innerHTML = '<div>No recipes found. The database is empty.</div>';
+                    return;
+                }
+                
+                let html = '';
+                data.data.forEach(recipe => {
+                    html += `
+                        <div class="recipe">
+                            <h3>${recipe.title}</h3>
+                            ${recipe.description ? `<p>${recipe.description}</p>` : ''}
+                            ${recipe.preparation_time ? `<p><strong>Prep time:</strong> ${recipe.preparation_time} minutes</p>` : ''}
+                            ${recipe.serving_size ? `<p><strong>Serves:</strong> ${recipe.serving_size}</p>` : ''}
+                        </div>
+                    `;
+                });
+                content.innerHTML = html;
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">Failed to load recipes: ${error.message}</div>`;
+                console.error('Error loading recipes:', error);
+            }
+        }
+        
+        async function loadIngredients() {
+            const content = document.getElementById('ingredientsContent');
+            content.innerHTML = '<div class="loading">Loading ingredients...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/ingredients?limit=100`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    content.innerHTML = `<div class="error">Error: ${data.message}</div>`;
+                    return;
+                }
+                
+                if (data.data.length === 0) {
+                    content.innerHTML = '<div>No ingredients found.</div>';
+                    return;
+                }
+                
+                let html = '';
+                data.data.forEach(ingredient => {
+                    const fodmapClass = `fodmap-${ingredient.fodmap_level.toLowerCase()}`;
+                    html += `
+                        <div class="ingredient">
+                            <strong>${ingredient.name}</strong> 
+                            (${ingredient.quantity_unit || 'unit'}) - 
+                            <span class="${fodmapClass}">${ingredient.fodmap_level}</span>
+                        </div>
+                    `;
+                });
+                content.innerHTML = html;
+                
+            } catch (error) {
+                content.innerHTML = `<div class="error">Failed to load ingredients: ${error.message}</div>`;
+                console.error('Error loading ingredients:', error);
+            }
+        }
+        
+        // Load recipes by default when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecipes();
+        });
+    </script>
+</body>
+</html>
