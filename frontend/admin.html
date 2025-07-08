@@ -216,6 +216,62 @@
             font-size: 1.25rem;
         }
 
+        /* Delete button styles */
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+            height: 28px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        .delete-btn:active {
+            transform: scale(0.95);
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s ease;
+        }
+
+        .item-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .recipe-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin: 5px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .recipe-item:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 1rem;
@@ -232,6 +288,13 @@
 
             .tab {
                 text-align: center;
+            }
+
+            .delete-btn {
+                font-size: 11px;
+                padding: 3px 6px;
+                min-width: 26px;
+                height: 24px;
             }
         }
     </style>
@@ -516,9 +579,16 @@
                 }
 
                 container.innerHTML = data.data.map(recipe =>
-                    `<div style="padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 4px;">
-                        <strong>${recipe.title}</strong><br>
-                        <small>Category: ${recipe.category_id} | Prep: ${recipe.preparation_time || 'N/A'} min</small>
+                    `<div class="recipe-item">
+                        <div>
+                            <strong>${recipe.title}</strong><br>
+                            <small>Category: ${recipe.category_id} | Prep: ${recipe.preparation_time || 'N/A'} min</small>
+                        </div>
+                        <button onclick="confirmDeleteRecipe(${recipe.id}, '${recipe.title.replace(/'/g, "\\'")}')"
+                                class="delete-btn"
+                                title="Delete Recipe">
+                            🗑️
+                        </button>
                     </div>`
                 ).join('');
             } catch (error) {
@@ -538,11 +608,18 @@
                 }
 
                 container.innerHTML = data.data.map(ingredient =>
-                    `<div style="padding: 5px; border-bottom: 1px solid #eee;">
-                        <strong>${ingredient.name}</strong> (${ingredient.quantity_unit || 'unit'}) -
-                        <span style="color: ${ingredient.fodmap_level === 'LOW' ? 'green' : ingredient.fodmap_level === 'MODERATE' ? 'orange' : 'red'}">
-                            ${ingredient.fodmap_level}
-                        </span>
+                    `<div class="item-row">
+                        <div>
+                            <strong>${ingredient.name}</strong> (${ingredient.quantity_unit || 'unit'}) -
+                            <span style="color: ${ingredient.fodmap_level === 'LOW' ? 'green' : ingredient.fodmap_level === 'MODERATE' ? 'orange' : 'red'}">
+                                ${ingredient.fodmap_level}
+                            </span>
+                        </div>
+                        <button onclick="confirmDeleteIngredient(${ingredient.id}, '${ingredient.name.replace(/'/g, "\\'")}')"
+                                class="delete-btn"
+                                title="Delete Ingredient">
+                            🗑️
+                        </button>
                     </div>`
                 ).join('');
             } catch (error) {
@@ -781,6 +858,60 @@
         function clearIngredientForm() {
             document.getElementById('ingredientForm').reset();
             document.getElementById('ingredientMessage').innerHTML = '';
+        }
+
+        // Delete confirmation and functions
+        function confirmDeleteRecipe(recipeId, recipeName) {
+            if (confirm(`Are you sure you want to delete the recipe "${recipeName}"?\n\nThis action cannot be undone.`)) {
+                deleteRecipe(recipeId, recipeName);
+            }
+        }
+
+        function confirmDeleteIngredient(ingredientId, ingredientName) {
+            if (confirm(`Are you sure you want to delete the ingredient "${ingredientName}"?\n\nThis action cannot be undone and will fail if any recipes use this ingredient.`)) {
+                deleteIngredient(ingredientId, ingredientName);
+            }
+        }
+
+        async function deleteRecipe(recipeId, recipeName) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    alert(`Error deleting recipe: ${result.message}`);
+                } else {
+                    alert(`Recipe "${recipeName}" deleted successfully!`);
+                    // Refresh the recipes list
+                    loadRecentRecipes();
+                }
+            } catch (error) {
+                alert(`Error deleting recipe: ${error.message}`);
+            }
+        }
+
+        async function deleteIngredient(ingredientId, ingredientName) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/ingredients/${ingredientId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    alert(`Error deleting ingredient: ${result.message}`);
+                } else {
+                    alert(`Ingredient "${ingredientName}" deleted successfully!`);
+                    // Refresh both ingredients list and the dropdown in recipe form
+                    loadAllIngredients();
+                    loadIngredients();
+                }
+            } catch (error) {
+                alert(`Error deleting ingredient: ${error.message}`);
+            }
         }
 
         // Initialize with one ingredient field

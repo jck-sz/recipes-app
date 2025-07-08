@@ -1,0 +1,16 @@
+{
+  "title": "Smoothie bananowo-truskawkowe LOW FODMAP",
+  "description": "Kremowe smoothie z niedojrzałym bananem i truskawkami Low FODMAP. 280 kcal | Czas: 3 minuty. BARDZO WAŻNE - wybór banana: niedojrzały (żółty z zielonymi końcówkami), twardy, nie miękki. Dojrzały banan z brązowymi plamkami to wysokie FODMAP! Przygotowanie składników (1 min): Banan obrać, pokroić na kawałki. Truskawki: jeśli świeże - umyć i usunąć szypułki. Olej kokosowy: jeśli stały, można lekko podgrzać. Miksowanie (2 min): Do blendera włożyć w kolejności: mleko owsiane (na dole), pokrojony banan, truskawki, olej kokosowy, cynamon. Miksować 60-90 sekund do gładkiej konsystencji. Podawanie: Przelać do wysokiej szklanki, można udekorować półplastrami truskawek, podawać z słomką. Wartości odżywcze: 280 kcal, 6g białka, 8g tłuszczów, 48g węglowodanów, 6g błonnika, 420mg potasu.",
+  "preparation_time": 3,
+  "serving_size": 1,
+  "category_id": 4,
+  "created_by": "system",
+  "ingredients": [
+    {"ingredient_id": 26, "quantity": 1},
+    {"ingredient_id": 28, "quantity": 100},
+    {"ingredient_id": 67, "quantity": 150},
+    {"ingredient_id": 34, "quantity": 10},
+    {"ingredient_id": 36, "quantity": 1}
+  ],
+  "tags": [1, 4, 5, 6]
+}

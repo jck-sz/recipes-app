@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal Recipe Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .recipe-card { border: 1px solid #ccc; margin: 10px; padding: 15px; }
+        .ingredient-item { background: #f5f5f5; margin: 5px 0; padding: 5px; }
+        .fodmap-low { border-left: 3px solid green; }
+        .fodmap-moderate { border-left: 3px solid orange; }
+        .fodmap-high { border-left: 3px solid red; }
+    </style>
+</head>
+<body>
+    <h1>Minimal Recipe Test</h1>
+    <div id="content">Loading...</div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+
+        async function loadAndDisplayRecipes() {
+            try {
+                console.log('Loading recipes...');
+                
+                // Load recipes
+                const recipesResponse = await fetch(`${API_BASE_URL}/recipes`);
+                const recipesData = await recipesResponse.json();
+                console.log('Recipes response:', recipesData);
+                
+                if (recipesData.error || !recipesData.data) {
+                    document.getElementById('content').innerHTML = 'Error loading recipes';
+                    return;
+                }
+                
+                let html = '';
+                
+                // Process each recipe
+                for (const recipe of recipesData.data) {
+                    console.log(`Processing recipe ${recipe.id}: ${recipe.title}`);
+                    
+                    html += `
+                        <div class="recipe-card">
+                            <h3>${recipe.title}</h3>
+                            <p>${recipe.description || ''}</p>
+                            <p>⏱️ ${recipe.preparation_time || 'N/A'} min</p>
+                    `;
+                    
+                    // Load ingredients for this recipe
+                    try {
+                        const ingredientsResponse = await fetch(`${API_BASE_URL}/recipes/${recipe.id}/ingredients`);
+                        const ingredientsData = await ingredientsResponse.json();
+                        console.log(`Ingredients for recipe ${recipe.id}:`, ingredientsData);
+                        
+                        if (!ingredientsData.error && ingredientsData.data && ingredientsData.data.ingredients) {
+                            html += '<h4>🥘 Ingredients:</h4>';
+                            
+                            ingredientsData.data.ingredients.forEach(ingredient => {
+                                console.log('Processing ingredient:', ingredient);
+                                const fodmapClass = `fodmap-${ingredient.fodmap_level.toLowerCase()}`;
+                                html += `
+                                    <div class="ingredient-item ${fodmapClass}">
+                                        <strong>${ingredient.name}</strong>: 
+                                        ${ingredient.quantity} ${ingredient.quantity_unit} 
+                                        (FODMAP: ${ingredient.fodmap_level})
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            html += '<p>No ingredients found</p>';
+                        }
+                    } catch (error) {
+                        console.error(`Error loading ingredients for recipe ${recipe.id}:`, error);
+                        html += '<p>Error loading ingredients</p>';
+                    }
+                    
+                    html += '</div>';
+                }
+                
+                document.getElementById('content').innerHTML = html;
+                console.log('All recipes processed successfully');
+                
+            } catch (error) {
+                console.error('Error in loadAndDisplayRecipes:', error);
+                document.getElementById('content').innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        // Load when page is ready
+        document.addEventListener('DOMContentLoaded', loadAndDisplayRecipes);
+    </script>
+</body>
+</html>

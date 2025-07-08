@@ -407,7 +407,9 @@
                 const recipesByCategory = groupRecipesByCategory();
 
                 // Load recipe ingredients for all recipes
+                console.log('About to load recipe ingredients for recipes:', recipes);
                 await loadRecipeIngredients();
+                console.log('Recipe ingredients loaded, recipeIngredients object:', recipeIngredients);
 
                 // Generate HTML for each category
                 let html = '';
@@ -425,8 +427,8 @@
                 }
 
             } catch (error) {
-                content.innerHTML = `<div class="error">Failed to load recipes: ${error.message}</div>`;
                 console.error('Error loading recipes:', error);
+                content.innerHTML = `<div class="error">Failed to load recipes: ${error.message}</div>`;
             }
         }
 
@@ -462,8 +464,9 @@
                 try {
                     const response = await fetch(`${API_BASE_URL}/recipes/${recipe.id}/ingredients`);
                     const data = await response.json();
-                    if (!data.error) {
-                        recipeIngredients[recipe.id] = data.data;
+                    console.log(`Ingredients for recipe ${recipe.id}:`, data);
+                    if (!data.error && data.data && data.data.ingredients) {
+                        recipeIngredients[recipe.id] = data.data.ingredients;
                     } else {
                         recipeIngredients[recipe.id] = [];
                     }
@@ -472,6 +475,7 @@
                     recipeIngredients[recipe.id] = [];
                 }
             }
+            console.log('All recipe ingredients loaded:', recipeIngredients);
         }
 
         function groupRecipesByCategory() {
@@ -517,6 +521,7 @@
         function generateRecipeCard(recipe) {
             // Get recipe ingredients from loaded data
             const ingredientsList = recipeIngredients[recipe.id] || [];
+            console.log(`Generating card for recipe ${recipe.id} (${recipe.title}), ingredients:`, ingredientsList);
 
             let html = `
                 <div class="recipe-card">
@@ -545,20 +550,18 @@
                         <div class="ingredients-list">
                 `;
 
-                ingredientsList.forEach(item => {
-                    const ingredient = ingredients.find(ing => ing.id === item.ingredient_id);
-                    if (ingredient) {
-                        const fodmapClass = `fodmap-${ingredient.fodmap_level.toLowerCase()}`;
-                        html += `
-                            <div class="ingredient-item ${fodmapClass}">
-                                <span class="ingredient-name">${ingredient.name}</span>
-                                <div>
-                                    <span class="ingredient-quantity">${item.quantity} ${ingredient.quantity_unit || 'unit'}</span>
-                                    <span class="fodmap-badge fodmap-${ingredient.fodmap_level.toLowerCase()}">${ingredient.fodmap_level}</span>
-                                </div>
+                ingredientsList.forEach(ingredient => {
+                    console.log('Processing ingredient:', ingredient);
+                    const fodmapClass = `fodmap-${ingredient.fodmap_level.toLowerCase()}`;
+                    html += `
+                        <div class="ingredient-item ${fodmapClass}">
+                            <span class="ingredient-name">${ingredient.name}</span>
+                            <div>
+                                <span class="ingredient-quantity">${ingredient.quantity} ${ingredient.quantity_unit || 'unit'}</span>
+                                <span class="fodmap-badge fodmap-${ingredient.fodmap_level.toLowerCase()}">${ingredient.fodmap_level}</span>
                             </div>
-                        `;
-                    }
+                        </div>
+                    `;
                 });
 
                 html += `

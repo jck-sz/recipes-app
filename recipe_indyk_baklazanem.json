@@ -1,0 +1,22 @@
+{
+  "title": "Indyk z quinoą i bakłażanem LOW FODMAP",
+  "description": "Aromatyczne danie z indykiem, quinoą i pieczonym bakłażanem Low FODMAP. 405 kcal | 30 min. Piekarnik i bakłażan (20 min): Piekarnik nagrzać do 200°C. Bakłażana pokroić w kostki 2cm, posolic i zostawić 10 min (wypuści goryczę). Osuszyć ręcznikiem, wymieszać z olejem oliwkowym + oregano + sól. Rozłożyć na blasze, piec 15-18 min do zarumienienia (przewrócić po 10 min). Quinoa (12 min równolegle): Quinoę przepłukać, ugotować w 100ml wody z solą 12 min pod przykryciem, odstawić na 5 min. Indyk (6 min): Indyka pokroić w kostki, przyprawić. Smażyć na oleju rzepakowym 5-6 min. Dodać oregano i bazylię. Połączenie (3 min): Dodać bakłażana do indyka. Skropić cytryną, wymieszać. Podawać z quinoą.",
+  "preparation_time": 30,
+  "serving_size": 1,
+  "category_id": 3,
+  "created_by": "system",
+  "ingredients": [
+    {"ingredient_id": 70, "quantity": 120},
+    {"ingredient_id": 14, "quantity": 40},
+    {"ingredient_id": 10, "quantity": 150},
+    {"ingredient_id": 20, "quantity": 22.5},
+    {"ingredient_id": 48, "quantity": 22.5},
+    {"ingredient_id": 59, "quantity": 100},
+    {"ingredient_id": 63, "quantity": 5},
+    {"ingredient_id": 71, "quantity": 5},
+    {"ingredient_id": 64, "quantity": 15},
+    {"ingredient_id": 35, "quantity": 2},
+    {"ingredient_id": 57, "quantity": 1}
+  ],
+  "tags": [5]
+}

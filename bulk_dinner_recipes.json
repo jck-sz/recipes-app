@@ -1,0 +1,70 @@
+{
+  "recipes": [
+    {
+      "title": "Sałatka z mozzarellą di bufala, quinoą i ogórkiem LOW FODMAP",
+      "description": "Elegancka sałatka z mozzarellą di bufala, quinoą i świeżymi warzywami Low FODMAP. 410 kcal | 17 min. Quinoa (12 min): Quinoę przepłukać pod zimną wodą przez 2 minuty. W małym garnku zagotować 100ml wody z szczyptą soli. Dodać quinoę, gotować 12 minut pod przykryciem na małym ogniu. Po ugotowaniu odstawić na 5 minut bez zdejmowania pokrywy. Rozgarnąć widelcem, skropić łyżeczką oliwy. CAŁKOWICIE ostudzić (ważne - ciepła quinoa roztopi mozzarellę!). Przygotowanie składników (5 min): Ogórek umyć, nie obierać, pokroić w kostki 1cm. Mozzarellę di bufala wyjąć z lodówki 15 min wcześniej. Mozzarellę pokroić w nieregularne kawałki 2-3cm. Roszponkę delikatnie umyć w zimnej wodzie, osuszyć. Bazylię umyć, osuszyć, podarć rękami na większe kawałki. Orzechy włoskie posiekać na większe kawałki. Dressing (2 min): W małej miseczce wymieszać: olej oliwkowy + ocet balsamiczny + sok z cytryny + szczypta soli + pieprz. Energicznie wymieszać widelcem. Składanie sałatki (3 min): Roszponkę rozłożyć na dużym talerzu jako podstawę. Ostudzoną quinoę ułożyć kopką na środku. Kawałki mozzarelli rozłożyć równomiernie wokół quinoa. Kostki ogórka posypać po całej sałatce. Bazylię rozrzucić na wierzchołku. Polać dressing równomiernie. Posypać orzechami na koniec. Finalne podanie (1 min): Doprawić dodatkowo solą i pieprzem jeśli potrzeba. Skropić resztą soku z cytryny. Podawać natychmiast - najlepiej świeże. WAŻNE: Mozzarella di bufala w temperaturze pokojowej - smak się lepiej rozwija. Zachowaj mleko z opakowania - można dodać łyżkę do dressingu. Nie krój za wcześnie - traci soczystość. Quinoa MUSI być całkowicie ostudzona - najważniejsze! Przepłukaj zawsze - usuwa gorzki smak.",
+      "preparation_time": 17,
+      "serving_size": 1,
+      "category_id": 3,
+      "created_by": "system",
+      "ingredients": [
+        {"ingredient_id": 75, "quantity": 100},
+        {"ingredient_id": 14, "quantity": 40},
+        {"ingredient_id": 6, "quantity": 80},
+        {"ingredient_id": 76, "quantity": 50},
+        {"ingredient_id": 77, "quantity": 15},
+        {"ingredient_id": 20, "quantity": 22.5},
+        {"ingredient_id": 78, "quantity": 15},
+        {"ingredient_id": 33, "quantity": 10},
+        {"ingredient_id": 35, "quantity": 2},
+        {"ingredient_id": 57, "quantity": 1},
+        {"ingredient_id": 64, "quantity": 5}
+      ],
+      "tags": [1, 5]
+    },
+    {
+      "title": "Stir-fry indyk z warzywami LOW FODMAP",
+      "description": "Azjatyckie stir-fry z indykiem i warzywami Low FODMAP. 480 kcal | 15 min. Przygotowanie składników (5 min): Indyka pokroić w paski 1cm x 5cm (w poprzek włókien). Cukinię pokroić w paski lub półplastry. Marchew pokroić w cienkie paski. Paprykę pokroić w cienkie paski (MAX 40g - limit Low FODMAP). Imbir obrać i zetrzeć na tarce. Szczypiorek pokroić (tylko zielone części). Marynata dla indyka (2 min): Indyka włożyć do miski. Dodać imbir + pieprz. Wymieszać, zostawić na 5 minut. Stir-fry - smażenie (8 min): Wok lub dużą patelnię rozgrzać na wysokim ogniu. Dodać olej rzepakowy (wędruje po całej patelni). Indyka smażyć 2-3 minuty (nie mieszać za często!). Dodać marchew - smażyć 2 minuty. Dodać paprykę - smażyć 1 minutę. Dodać cukinię - smażyć 1-2 minuty (powinna być al dente). Finalizacja (2 min): Dodać ocet ryżowy. Smażyć 30 sekund (sos powinien syczec). Zdjąć z ognia, dodać olej sezamowy. Wymieszać delikatnie. Posypać nasionami sezamu i szczypiorkiem. WAŻNE Low FODMAP: Papryka czerwona: 40g (limit: 43g) ✅, Cukinia: 120g (low FODMAP bez limitu) ✅, Marchewka: 100g (low FODMAP bez limitu) ✅, Szczypiorek: tylko zielone części (białe = high FODMAP!) ❌. Technika stir-fry: Wysoka temperatura, Wok rozgrzany do smoke point, składniki dodawane szybko. Kolejność: Mięso (najdłużej) → Twarde warzywa → Średnie → Miękkie → Sosy na końcu. Olej sezamowy: Low FODMAP w umiarkowanych ilościach, dodawać na końcu. Wszystkie składniki przygotuj wcześniej, nie przeciążaj patelni. Z ryżem: Podawaj z 50g ryżu brązowego ugotowanego osobno (~650 kcal razem). Zdrowe tłuszcze z oleju sezamowego!",
+      "preparation_time": 15,
+      "serving_size": 1,
+      "category_id": 3,
+      "created_by": "system",
+      "ingredients": [
+        {"ingredient_id": 70, "quantity": 100},
+        {"ingredient_id": 9, "quantity": 120},
+        {"ingredient_id": 3, "quantity": 100},
+        {"ingredient_id": 8, "quantity": 40},
+        {"ingredient_id": 79, "quantity": 15},
+        {"ingredient_id": 48, "quantity": 15},
+        {"ingredient_id": 80, "quantity": 5},
+        {"ingredient_id": 81, "quantity": 5},
+        {"ingredient_id": 82, "quantity": 5},
+        {"ingredient_id": 83, "quantity": 5},
+        {"ingredient_id": 35, "quantity": 2},
+        {"ingredient_id": 57, "quantity": 1}
+      ],
+      "tags": [4, 5]
+    },
+    {
+      "title": "Szprotki z ziemniakami i ogórkiem LOW FODMAP",
+      "description": "Proste i zdrowe danie z szprotkami, ziemniakami i świeżym ogórkiem Low FODMAP. 395 kcal | 20 min. Ziemniaki (15 min): Ziemniaki umyć, można nie obierać (jeśli młode). Ugotować w osolonej wodzie 12-15 minut do miękkości. Odsączyć, ostudzić 5 minut. Pokroić w plastry 1cm. Przyprawić solą, pieprzem, skropić oliwą. Ogórki (5 min): Ogórki umyć, pokroić w cienkie plastry lub małe kostki. Posypać szczyptą soli, zostawić 5 minut (wypuszczą wodę). Odsączyć z nadmiaru wody. Skropić octem jabłkowym i sokiem z cytryny. Posypać koperkiem. Przygotowanie szprotek (3 min): Szprotki ostrożnie wyjąć z puszki (są delikatne!). Odsączyć z oleju (zachować 1 łyżkę). Rozłożyć na talerzu całe (nie dzielić). Skropić sokiem z cytryny. Przyprawić białym pieprzem. Komponowanie posiłku (2 min): Na talerz ułożyć listki sałaty jako podstawę. Ziemniaki ułożyć z jednej strony. Ogórki z drugiej strony. Szprotki delikatnie ułożyć na środku. Polać całość olejem z puszki + oliwa. Posypać świeżym koperkiem. Bogate w omega-3 ze szprotek!",
+      "preparation_time": 20,
+      "serving_size": 1,
+      "category_id": 3,
+      "created_by": "system",
+      "ingredients": [
+        {"ingredient_id": 84, "quantity": 110},
+        {"ingredient_id": 11, "quantity": 150},
+        {"ingredient_id": 6, "quantity": 100},
+        {"ingredient_id": 20, "quantity": 15},
+        {"ingredient_id": 73, "quantity": 5},
+        {"ingredient_id": 64, "quantity": 10},
+        {"ingredient_id": 35, "quantity": 2},
+        {"ingredient_id": 74, "quantity": 1},
+        {"ingredient_id": 7, "quantity": 30},
+        {"ingredient_id": 85, "quantity": 5}
+      ],
+      "tags": [4, 5]
+    }
+  ]
+}

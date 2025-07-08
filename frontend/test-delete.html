@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Delete Functionality</title>
+</head>
+<body>
+    <h1>Test Delete Functionality</h1>
+    
+    <h2>Test Recipe Delete</h2>
+    <button onclick="testRecipeDelete()">Test Recipe Delete (ID 999 - should fail)</button>
+    <div id="recipeResult"></div>
+    
+    <h2>Test Ingredient Delete</h2>
+    <button onclick="testIngredientDelete()">Test Ingredient Delete (ID 999 - should fail)</button>
+    <div id="ingredientResult"></div>
+    
+    <h2>List Current Data</h2>
+    <button onclick="listRecipes()">List Recipes</button>
+    <button onclick="listIngredients()">List Ingredients</button>
+    <div id="dataList"></div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3000';
+
+        async function testRecipeDelete() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/recipes/999`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                document.getElementById('recipeResult').innerHTML = 
+                    `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('recipeResult').innerHTML = 
+                    `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testIngredientDelete() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/ingredients/999`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                document.getElementById('ingredientResult').innerHTML = 
+                    `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('ingredientResult').innerHTML = 
+                    `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function listRecipes() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/recipes?limit=5`);
+                const result = await response.json();
+                document.getElementById('dataList').innerHTML = 
+                    `<h3>Recipes:</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('dataList').innerHTML = 
+                    `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+
+        async function listIngredients() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/ingredients?limit=5`);
+                const result = await response.json();
+                document.getElementById('dataList').innerHTML = 
+                    `<h3>Ingredients:</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('dataList').innerHTML = 
+                    `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

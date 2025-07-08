@@ -1,0 +1,18 @@
+{
+  "title": "Owsianka z truskawkami i orzechami włoskimi",
+  "description": "Zdrowa i bezpieczna owsianka Low FODMAP na dobry początek dnia. Kremowa owsianka z mleka ryżowego z dodatkiem świeżych truskawek i orzechów włoskich. Porcja: 1 osoba | Czas: 8 minut | Kalorie: 385 kcal. Przygotowanie: W średnim rondelku zagotować mleko ryżowe ze szczyptą soli, dodać płatki owsiane, gotować na wolnym ogniu 3-4 minuty często mieszając. Owsianka powinna być kremowa, nie za gęsta. Zdjąć z ognia, dodać olej kokosowy. Truskawki umyć, pokroić na ćwiartki. Orzechy posiekać na mniejsze kawałki. Owsiankę przełożyć do miski, na wierzch ułożyć truskawki, posypać orzechami, opcjonalnie posypać cynamonem.",
+  "preparation_time": 8,
+  "serving_size": 1,
+  "category_id": 1,
+  "created_by": "system",
+  "ingredients": [
+    {"ingredient_id": 31, "quantity": 40},
+    {"ingredient_id": 32, "quantity": 150},
+    {"ingredient_id": 28, "quantity": 100},
+    {"ingredient_id": 33, "quantity": 15},
+    {"ingredient_id": 34, "quantity": 5},
+    {"ingredient_id": 35, "quantity": 1},
+    {"ingredient_id": 36, "quantity": 1}
+  ],
+  "tags": [3, 4, 5]
+}

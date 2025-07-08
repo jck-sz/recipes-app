@@ -1,0 +1,25 @@
+{
+  "title": "Mielone kotlety z jagnięciny z quinoą i marchewką",
+  "description": "Aromatyczne kotlety z jagnięciny Low FODMAP z quinoą i duszoną marchewką. Porcje: 2 osoby (4 kotlety) | Czas: 40 minut | Kalorie: 440 kcal/porcja. Przygotowanie kotletów: Mieloną jagnięcinę wymieszać z żółtkiem, bułką tartą bezglutenową, rozmarynem, tymiankiem, solą i pieprzem. Nie mieszać za długo. Uformować 4 kotlety (100g każdy), schłodzić 15 min. Quinoa: Przepłukać, ugotować w 250ml wody z solą 12 min pod przykryciem, odstawić na 5 min, rozgarnąć widelcem. Marchewka: Pokroić w ukośne plastry 1,5cm, smażyć na oliwie 3 min, dodać bulion i oregano, dusić pod przykryciem 10-12 min, na końcu sok z cytryny. Smażenie kotletów: Na średnim ogniu z olejem rzepakowym, 5 min z pierwszej strony, 4-5 min z drugiej, odpoczynek 2 min. Podawanie: quinoa na talerzu, obok marchewka, na wierzchu 2 kotlety, polać sokiem z cytryny.",
+  "preparation_time": 40,
+  "serving_size": 2,
+  "category_id": 2,
+  "created_by": "system",
+  "ingredients": [
+    {"ingredient_id": 60, "quantity": 400},
+    {"ingredient_id": 37, "quantity": 1},
+    {"ingredient_id": 61, "quantity": 30},
+    {"ingredient_id": 62, "quantity": 5},
+    {"ingredient_id": 54, "quantity": 2.5},
+    {"ingredient_id": 14, "quantity": 100},
+    {"ingredient_id": 3, "quantity": 300},
+    {"ingredient_id": 20, "quantity": 30},
+    {"ingredient_id": 48, "quantity": 15},
+    {"ingredient_id": 59, "quantity": 200},
+    {"ingredient_id": 63, "quantity": 5},
+    {"ingredient_id": 64, "quantity": 15},
+    {"ingredient_id": 35, "quantity": 3},
+    {"ingredient_id": 57, "quantity": 2}
+  ],
+  "tags": [5]
+}

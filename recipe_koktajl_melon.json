@@ -1,0 +1,15 @@
+{
+  "title": "Koktajl z melona LOW FODMAP",
+  "description": "Orzeźwiający koktajl z melona kantalupa Low FODMAP. 255 kcal. Przygotowanie: Melona obrać ze skórki i pokroić na kawałki. Orzechy lekko posiekać. Melon, mleko owsiane i wodę wrzucić do blendera, miksować 45 sekund do gładkości. Dodać posiekane orzechy na wierzch. Podawać schłodzone.",
+  "preparation_time": 5,
+  "serving_size": 1,
+  "category_id": 4,
+  "created_by": "system",
+  "ingredients": [
+    {"ingredient_id": 66, "quantity": 200},
+    {"ingredient_id": 67, "quantity": 125},
+    {"ingredient_id": 33, "quantity": 10},
+    {"ingredient_id": 68, "quantity": 2.5}
+  ],
+  "tags": [4, 5, 6]
+}

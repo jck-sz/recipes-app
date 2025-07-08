@@ -1,0 +1,19 @@
+{
+  "title": "Łosoś z ziemniakami i szpinakiem LOW FODMAP",
+  "description": "Eleganckie danie z łososiem, ziemniakami i szpinakiem Low FODMAP. 415 kcal | 25 min. Przygotowanie ziemniaków (15 min): Ziemniaki obrać i pokroić na kawałki 3-4cm. Wrzucić do osolonej wrzącej wody, gotować 12-15 minut do miękkości. Odsączyć i lekko rozgnieść widelcem. Doprawić solą, pieprzem i odrobiną oliwy. Przygotowanie łososia (8 min): Łosoś osuszyć ręcznikiem papierowym. Przyprawić solą i pieprzem z obu stron. Skropić sokiem z cytryny, zostawić na 5 min. Rozgrzać patelnię na średnim ogniu. Dodać 1/2 łyżki oliwy lub masła klarowanego. Smażyć łososia 3-4 minuty z pierwszej strony. Odwrócić, smażyć 2-3 minuty z drugiej strony. Wnętrze powinno być lekko różowe. Szpinak (3 min): W tej samej patelni (po łososiu) dodać resztę oliwy. Wrzucić umyty szpinak (może być mokry). Zeszklić na wysokim ogniu 1-2 minuty. Dodać szczyptę soli i pieprzu. Dodać posiekany koper na końcu. Podawanie: Na talerz ułożyć ziemniaki. Obok położyć łososia. Wokół rozłożyć zeszklony szpinak. Polać sokiem z cytryny. Posypać świeżym koperkiem. Bogaty w omega-3 z łososia!",
+  "preparation_time": 25,
+  "serving_size": 1,
+  "category_id": 3,
+  "created_by": "system",
+  "ingredients": [
+    {"ingredient_id": 72, "quantity": 80},
+    {"ingredient_id": 11, "quantity": 150},
+    {"ingredient_id": 4, "quantity": 100},
+    {"ingredient_id": 20, "quantity": 15},
+    {"ingredient_id": 64, "quantity": 10},
+    {"ingredient_id": 73, "quantity": 5},
+    {"ingredient_id": 35, "quantity": 2},
+    {"ingredient_id": 74, "quantity": 1}
+  ],
+  "tags": [5]
+}
