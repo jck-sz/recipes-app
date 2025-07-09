@@ -396,7 +396,12 @@
         <div id="adminPanel" class="admin-panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h1>FODMAP Recipe Admin</h1>
-                <button onclick="logout()" class="secondary">Logout</button>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="goToFrontpage()" class="secondary">
+                        <span style="margin-right: 5px;">🏠</span>Go to Frontpage
+                    </button>
+                    <button onclick="logout()" class="secondary">Logout</button>
+                </div>
             </div>
 
             <!-- Tabs -->
@@ -625,6 +630,11 @@
             if (offlineWarning) {
                 offlineWarning.remove();
             }
+        }
+
+        function goToFrontpage() {
+            // Navigate to the main frontpage
+            window.location.href = 'index.html';
         }
 
         // Show offline mode warning
@@ -1177,15 +1187,18 @@
                     </div>
                 `;
 
+                // Store original content in a data attribute to avoid escaping issues
+                recipeDiv.setAttribute('data-original-content', originalContent);
+
                 // Replace edit button with save/cancel buttons
                 const actionsDiv = recipeDiv.querySelector('.item-actions');
                 actionsDiv.innerHTML = `
-                    <button onclick="saveRecipe(${recipeId}, '${originalContent.replace(/'/g, "\\'")}')"
+                    <button onclick="saveRecipe(${recipeId})"
                             class="save-btn"
                             title="Save Changes">
                         💾
                     </button>
-                    <button onclick="cancelEdit('recipe', ${recipeId}, '${originalContent.replace(/'/g, "\\'")}')"
+                    <button onclick="cancelRecipeEdit(${recipeId})"
                             class="cancel-btn"
                             title="Cancel Edit">
                         ❌
@@ -1216,8 +1229,9 @@
                 // Add edit mode class
                 ingredientDiv.classList.add('edit-mode');
 
-                // Store original content
+                // Store original content in a data attribute to avoid escaping issues
                 const originalContent = contentDiv.innerHTML;
+                ingredientDiv.setAttribute('data-original-content', originalContent);
 
                 // Create edit form
                 contentDiv.innerHTML = `
@@ -1237,12 +1251,12 @@
                 // Replace edit button with save/cancel buttons
                 const actionsDiv = ingredientDiv.querySelector('.item-actions');
                 actionsDiv.innerHTML = `
-                    <button onclick="saveIngredient(${ingredientId}, '${originalContent.replace(/'/g, "\\'")}')"
+                    <button onclick="saveIngredient(${ingredientId})"
                             class="save-btn"
                             title="Save Changes">
                         💾
                     </button>
-                    <button onclick="cancelEdit('ingredient', ${ingredientId}, '${originalContent.replace(/'/g, "\\'")}')"
+                    <button onclick="cancelIngredientEdit(${ingredientId})"
                             class="cancel-btn"
                             title="Cancel Edit">
                         ❌
@@ -1255,7 +1269,7 @@
         }
 
         // Save recipe changes
-        async function saveRecipe(recipeId, originalContent) {
+        async function saveRecipe(recipeId) {
             try {
                 const title = document.getElementById(`edit-recipe-title-${recipeId}`).value.trim();
                 const description = document.getElementById(`edit-recipe-description-${recipeId}`).value.trim();
@@ -1297,8 +1311,40 @@
             }
         }
 
+        // Cancel recipe edit mode
+        function cancelRecipeEdit(recipeId) {
+            const itemDiv = document.getElementById(`recipe-${recipeId}`);
+            const contentDiv = document.getElementById(`recipe-content-${recipeId}`);
+
+            // Remove edit mode class
+            itemDiv.classList.remove('edit-mode');
+
+            // Restore original content from data attribute
+            const originalContent = itemDiv.getAttribute('data-original-content');
+            contentDiv.innerHTML = originalContent;
+
+            // Restore action buttons
+            const actionsDiv = itemDiv.querySelector('.item-actions');
+            actionsDiv.innerHTML = `
+                <button onclick="editRecipe(${recipeId})"
+                        class="edit-btn"
+                        title="Edit Recipe"
+                        id="edit-recipe-${recipeId}">
+                    ✏️
+                </button>
+                <button onclick="confirmDeleteRecipe(${recipeId}, '${contentDiv.textContent.split('Category:')[0].trim().replace(/'/g, "\\'")}')"
+                        class="delete-btn"
+                        title="Delete Recipe">
+                    🗑️
+                </button>
+            `;
+
+            // Remove the data attribute
+            itemDiv.removeAttribute('data-original-content');
+        }
+
         // Save ingredient changes
-        async function saveIngredient(ingredientId, originalContent) {
+        async function saveIngredient(ingredientId) {
             try {
                 const name = document.getElementById(`edit-ingredient-name-${ingredientId}`).value.trim();
                 const unit = document.getElementById(`edit-ingredient-unit-${ingredientId}`).value.trim();
@@ -1335,6 +1381,38 @@
             } catch (error) {
                 alert(`Error saving ingredient: ${error.message}`);
             }
+        }
+
+        // Cancel ingredient edit mode
+        function cancelIngredientEdit(ingredientId) {
+            const itemDiv = document.getElementById(`ingredient-${ingredientId}`);
+            const contentDiv = document.getElementById(`ingredient-content-${ingredientId}`);
+
+            // Remove edit mode class
+            itemDiv.classList.remove('edit-mode');
+
+            // Restore original content from data attribute
+            const originalContent = itemDiv.getAttribute('data-original-content');
+            contentDiv.innerHTML = originalContent;
+
+            // Restore action buttons
+            const actionsDiv = itemDiv.querySelector('.item-actions');
+            actionsDiv.innerHTML = `
+                <button onclick="editIngredient(${ingredientId})"
+                        class="edit-btn"
+                        title="Edit Ingredient"
+                        id="edit-ingredient-${ingredientId}">
+                    ✏️
+                </button>
+                <button onclick="confirmDeleteIngredient(${ingredientId}, '${contentDiv.textContent.split('(')[0].trim().replace(/'/g, "\\'")}')"
+                        class="delete-btn"
+                        title="Delete Ingredient">
+                    🗑️
+                </button>
+            `;
+
+            // Remove the data attribute
+            itemDiv.removeAttribute('data-original-content');
         }
 
         // Cancel edit mode
