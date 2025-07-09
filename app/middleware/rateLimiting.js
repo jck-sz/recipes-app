@@ -1,10 +1,30 @@
 const rateLimit = require('express-rate-limit');
 const { logger } = require('./logging');
 
+// Validate rate limiting configuration
+function validateRateLimitConfig() {
+  const generalWindow = parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000;
+  const generalMax = parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100;
+  const strictWindow = parseInt(process.env.STRICT_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000;
+  const strictMax = parseInt(process.env.STRICT_RATE_LIMIT_MAX_REQUESTS) || 20;
+
+  // Ensure reasonable limits
+  if (generalMax > 500) {
+    console.warn('RATE_LIMIT_MAX_REQUESTS is very high, consider reducing for security');
+  }
+  if (strictMax > 50) {
+    console.warn('STRICT_RATE_LIMIT_MAX_REQUESTS is very high, consider reducing for security');
+  }
+
+  return { generalWindow, generalMax, strictWindow, strictMax };
+}
+
+const { generalWindow, generalMax, strictWindow, strictMax } = validateRateLimitConfig();
+
 // General API rate limiter
 const generalLimiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // Limit each IP to 100 requests per windowMs
+  windowMs: generalWindow,
+  max: generalMax, // Limit each IP to configured requests per windowMs
   message: {
     error: true,
     message: 'Too many requests from this IP, please try again later.',
@@ -37,8 +57,8 @@ const generalLimiter = rateLimit({
 
 // Strict rate limiter for write operations (POST, PUT, DELETE)
 const strictLimiter = rateLimit({
-  windowMs: parseInt(process.env.STRICT_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.STRICT_RATE_LIMIT_MAX_REQUESTS) || 20, // Limit each IP to 20 write requests per windowMs
+  windowMs: strictWindow,
+  max: strictMax, // Limit each IP to configured write requests per windowMs
   message: {
     error: true,
     message: 'Too many write operations from this IP, please try again later.',

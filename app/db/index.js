@@ -1,14 +1,44 @@
 const { Pool } = require('pg');
 
+// Validate and sanitize pool configuration
+function validatePoolConfig() {
+  const max = parseInt(process.env.DB_POOL_MAX) || 20;
+  const min = parseInt(process.env.DB_POOL_MIN) || 2;
+  const maxUses = parseInt(process.env.DB_MAX_USES) || 1000; // Reduced from 7500
+  const idleTimeout = parseInt(process.env.DB_IDLE_TIMEOUT) || 30000;
+  const connectionTimeout = parseInt(process.env.DB_CONNECTION_TIMEOUT) || 10000;
+
+  // Validation
+  if (max < 1 || max > 100) {
+    throw new Error('DB_POOL_MAX must be between 1 and 100');
+  }
+  if (min < 0 || min > max) {
+    throw new Error('DB_POOL_MIN must be between 0 and DB_POOL_MAX');
+  }
+  if (maxUses < 100 || maxUses > 10000) {
+    throw new Error('DB_MAX_USES must be between 100 and 10000');
+  }
+  if (idleTimeout < 1000 || idleTimeout > 300000) {
+    throw new Error('DB_IDLE_TIMEOUT must be between 1000ms and 300000ms');
+  }
+  if (connectionTimeout < 1000 || connectionTimeout > 60000) {
+    throw new Error('DB_CONNECTION_TIMEOUT must be between 1000ms and 60000ms');
+  }
+
+  return { max, min, maxUses, idleTimeout, connectionTimeout };
+}
+
 // Database pool configuration
+const { max, min, maxUses, idleTimeout, connectionTimeout } = validatePoolConfig();
+
 const poolConfig = {
   connectionString: process.env.DATABASE_URL,
   // Connection pool settings
-  max: parseInt(process.env.DB_POOL_MAX) || 20, // Maximum number of connections
-  min: parseInt(process.env.DB_POOL_MIN) || 2,  // Minimum number of connections
-  idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT) || 30000, // 30 seconds
-  connectionTimeoutMillis: parseInt(process.env.DB_CONNECTION_TIMEOUT) || 10000, // 10 seconds
-  maxUses: parseInt(process.env.DB_MAX_USES) || 7500, // Maximum uses per connection
+  max, // Maximum number of connections
+  min, // Minimum number of connections
+  idleTimeoutMillis: idleTimeout,
+  connectionTimeoutMillis: connectionTimeout,
+  maxUses, // Reduced maximum uses per connection
 
   // SSL configuration for production
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
@@ -27,8 +57,11 @@ const pool = new Pool(poolConfig);
 
 // Enhanced connection monitoring and error handling
 pool.on('connect', (client) => {
-  console.log('New client connected to PostgreSQL database');
-  console.log(`Pool status: ${pool.totalCount} total, ${pool.idleCount} idle, ${pool.waitingCount} waiting`);
+  // Only log in debug mode to reduce noise
+  if (process.env.LOG_LEVEL === 'debug') {
+    console.log('New client connected to PostgreSQL database');
+    console.log(`Pool status: ${pool.totalCount} total, ${pool.idleCount} idle, ${pool.waitingCount} waiting`);
+  }
 
   // Set up client-level error handling
   client.on('error', (err) => {
@@ -36,13 +69,16 @@ pool.on('connect', (client) => {
   });
 });
 
-pool.on('acquire', () => {
-  console.log('Client acquired from pool');
-});
+// Only log pool events in debug mode
+if (process.env.LOG_LEVEL === 'debug') {
+  pool.on('acquire', () => {
+    console.log('Client acquired from pool');
+  });
 
-pool.on('remove', () => {
-  console.log('Client removed from pool');
-});
+  pool.on('remove', () => {
+    console.log('Client removed from pool');
+  });
+}
 
 pool.on('error', (err, client) => {
   console.error('PostgreSQL pool error:', err);
@@ -107,10 +143,19 @@ const query = async (text, params, retries = 3) => {
       const result = await pool.query(text, params);
       const duration = Date.now() - start;
 
+      // Only log slow queries or retries to reduce noise
       if (attempt > 1) {
-        console.log(`Query succeeded on attempt ${attempt}`, { text, duration, rows: result.rowCount });
-      } else {
-        console.log('Executed query', { text, duration, rows: result.rowCount });
+        console.log(`Query succeeded on attempt ${attempt}`, {
+          query: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+          duration,
+          rows: result.rowCount
+        });
+      } else if (duration > 1000 || process.env.LOG_LEVEL === 'debug') {
+        console.log('Executed query', {
+          query: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+          duration,
+          rows: result.rowCount
+        });
       }
 
       return result;
@@ -128,7 +173,7 @@ const query = async (text, params, retries = 3) => {
 
       if (isRetryableError && attempt < retries) {
         console.warn(`Query failed on attempt ${attempt}, retrying...`, {
-          text,
+          query: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
           duration,
           error: error.message,
           code: error.code
@@ -139,7 +184,12 @@ const query = async (text, params, retries = 3) => {
         continue;
       }
 
-      console.error('Query error', { text, duration, error: error.message, attempt });
+      console.error('Query error', {
+        query: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+        duration,
+        error: error.message,
+        attempt
+      });
       break;
     }
   }

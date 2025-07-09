@@ -1,19 +1,21 @@
 const Joi = require('joi');
 
 // Common validation patterns
-const positiveInteger = Joi.number().integer().positive();
-const nonEmptyString = Joi.string().trim().min(1);
-const url = Joi.string().uri();
+const positiveInteger = Joi.number().integer().positive().max(2147483647); // PostgreSQL int4 max
+const nonEmptyString = Joi.string().trim().min(1).max(1000); // Reasonable max length
+const url = Joi.string().uri().max(2048); // Reasonable URL length
 const fodmapLevel = Joi.string().valid('LOW', 'MODERATE', 'HIGH');
-const categoryName = Joi.string().valid('Śniadanie', 'Obiad', 'Kolacja', 'Przekąska');
 
-// Pagination schemas
+// More flexible category validation - allow any non-empty string but with length limits
+const categoryName = Joi.string().trim().min(1).max(100).pattern(/^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s]+$/); // Allow Polish characters
+
+// Pagination schemas with stricter limits
 const paginationSchema = Joi.object({
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(10)
+  page: Joi.number().integer().min(1).max(10000).default(1), // Prevent excessive pagination
+  limit: Joi.number().integer().min(1).max(50).default(10) // Reduced max limit for performance
 });
 
-// Category schemas
+// Category schemas - more flexible to allow internationalization
 const categoryCreateSchema = Joi.object({
   name: categoryName.required()
 });
@@ -119,17 +121,17 @@ const ingredientsByFodmapSchema = Joi.object({
   level: fodmapLevel.required()
 });
 
-// Bulk operation schemas
+// Bulk operation schemas with stricter limits for security
 const bulkRecipesSchema = Joi.object({
-  recipes: Joi.array().items(recipeCreateSchema).min(1).max(100).required()
+  recipes: Joi.array().items(recipeCreateSchema).min(1).max(20).required() // Reduced from 100
 });
 
 const bulkIngredientsSchema = Joi.object({
-  ingredients: Joi.array().items(ingredientCreateSchema).min(1).max(100).required()
+  ingredients: Joi.array().items(ingredientCreateSchema).min(1).max(50).required() // Reduced from 100
 });
 
 const bulkDeleteSchema = Joi.object({
-  ids: Joi.array().items(positiveInteger).min(1).max(100).required()
+  ids: Joi.array().items(positiveInteger).min(1).max(20).required() // Reduced from 100
 });
 
 // Recipe ingredients update schema

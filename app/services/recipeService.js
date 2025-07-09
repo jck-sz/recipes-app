@@ -4,7 +4,7 @@
  */
 
 const { query, withTransaction } = require('../db');
-const { buildWhereClause, sanitizeLikeInput } = require('../utils/queryBuilder');
+const { sanitizeLikeInput } = require('../utils/queryBuilder');
 
 class RecipeService {
   /**
@@ -14,56 +14,48 @@ class RecipeService {
     const { category, search, tag, prep_time_max } = filters;
     const { limit, offset } = pagination;
 
-    // Build conditions
+    // Build conditions safely without string manipulation
     const conditions = [];
-    
+    let paramIndex = 1;
+
     if (category) {
-      conditions.push({ field: 'r.category_id', value: category, type: 'exact' });
+      conditions.push(`r.category_id = $${paramIndex}`);
+      paramIndex++;
     }
 
     if (search) {
-      const searchTerm = sanitizeLikeInput(search);
-      conditions.push({ field: 'r.title', value: searchTerm, type: 'like' });
+      conditions.push(`(r.title ILIKE $${paramIndex} OR r.description ILIKE $${paramIndex})`);
+      paramIndex++;
     }
 
     if (tag) {
-      conditions.push({
-        field: 'EXISTS',
-        value: {
-          query: `SELECT 1 FROM recipe_tags rt JOIN tags t ON rt.tag_id = t.id WHERE rt.recipe_id = r.id AND t.name ILIKE $${conditions.length + 1}`,
-          params: [`%${sanitizeLikeInput(tag)}%`]
-        },
-        type: 'exists'
-      });
+      conditions.push(`EXISTS (SELECT 1 FROM recipe_tags rt JOIN tags t ON rt.tag_id = t.id WHERE rt.recipe_id = r.id AND t.name ILIKE $${paramIndex})`);
+      paramIndex++;
     }
 
     if (prep_time_max) {
-      conditions.push({ field: 'r.preparation_time', operator: '<=', value: prep_time_max, type: 'exact' });
+      conditions.push(`r.preparation_time <= $${paramIndex}`);
+      paramIndex++;
     }
 
-    const { whereClause, params: queryParams } = buildWhereClause(conditions);
-    
-    // Handle search OR condition
-    let finalWhereClause = whereClause;
-    let finalParams = [...queryParams];
-    
-    if (search && whereClause) {
-      const searchTerm = `%${sanitizeLikeInput(search)}%`;
-      finalWhereClause = whereClause.replace(
-        /r\.title ILIKE \$\d+/,
-        `(r.title ILIKE $1 OR r.description ILIKE $1)`
-      );
-      finalParams[0] = searchTerm;
-    }
+    // Build WHERE clause
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    // Build parameters array
+    const queryParams = [];
+    if (category) queryParams.push(category);
+    if (search) queryParams.push(`%${sanitizeLikeInput(search)}%`);
+    if (tag) queryParams.push(`%${sanitizeLikeInput(tag)}%`);
+    if (prep_time_max) queryParams.push(prep_time_max);
 
     // Get count and data
     const countQuery = `
       SELECT COUNT(DISTINCT r.id) as count
       FROM recipes r
       LEFT JOIN categories c ON r.category_id = c.id
-      ${finalWhereClause}
+      ${whereClause}
     `;
-    
+
     const dataQuery = `
       SELECT
         r.id, r.title, r.description, r.preparation_time,
@@ -75,15 +67,15 @@ class RecipeService {
       LEFT JOIN categories c ON r.category_id = c.id
       LEFT JOIN recipe_ingredients ri ON r.id = ri.recipe_id
       LEFT JOIN recipe_tags rt ON r.id = rt.recipe_id
-      ${finalWhereClause}
+      ${whereClause}
       GROUP BY r.id, c.name
       ORDER BY r.created_at DESC
-      LIMIT $${finalParams.length + 1} OFFSET $${finalParams.length + 2}
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
     const [countResult, dataResult] = await Promise.all([
-      query(countQuery, finalParams),
-      query(dataQuery, [...finalParams, limit, offset])
+      query(countQuery, queryParams),
+      query(dataQuery, [...queryParams, limit, offset])
     ]);
 
     return {

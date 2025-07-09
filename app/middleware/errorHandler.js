@@ -1,19 +1,35 @@
 const { internalError, validationError } = require('../utils/responses');
 const { logger } = require('./logging');
 
-// Global error handler middleware
-const globalErrorHandler = (err, req, res, next) => {
-  // Log the error
-  logger.error('Unhandled error', err, {
+// Sanitize sensitive data from request for logging
+function sanitizeRequestForLogging(req) {
+  const sanitized = {
     requestId: req.id,
     method: req.method,
     url: req.url,
-    body: req.body,
     query: req.query,
     params: req.params,
     userAgent: req.get('User-Agent'),
     ip: req.ip
-  });
+  };
+
+  // Only include body in debug mode and sanitize sensitive fields
+  if (process.env.LOG_LEVEL === 'debug' && req.body) {
+    const sanitizedBody = { ...req.body };
+    // Remove sensitive fields
+    delete sanitizedBody.password;
+    delete sanitizedBody.token;
+    delete sanitizedBody.secret;
+    sanitized.body = sanitizedBody;
+  }
+
+  return sanitized;
+}
+
+// Global error handler middleware
+const globalErrorHandler = (err, req, res, next) => {
+  // Log the error with sanitized request data
+  logger.error('Unhandled error', err, sanitizeRequestForLogging(req));
 
   // Handle different types of errors
   if (err.name === 'ValidationError') {
@@ -50,27 +66,22 @@ const globalErrorHandler = (err, req, res, next) => {
     return validationError(res, 'Invalid JSON format', [], 'INVALID_JSON');
   }
 
-  // Default to internal server error
-  const message = process.env.NODE_ENV === 'production' 
-    ? 'Internal server error' 
-    : err.message;
+  // Default to internal server error with sanitized response
+  const message = process.env.NODE_ENV === 'production'
+    ? 'Internal server error'
+    : 'An unexpected error occurred';
 
-  const details = process.env.NODE_ENV === 'production' 
-    ? [] 
-    : [err.stack];
+  // Never expose stack traces, even in development
+  const details = process.env.NODE_ENV === 'production'
+    ? []
+    : ['Check server logs for more details'];
 
   return internalError(res, message, details, 'INTERNAL_ERROR');
 };
 
 // 404 handler for undefined routes
 const notFoundHandler = (req, res) => {
-  logger.warn('Route not found', {
-    requestId: req.id,
-    method: req.method,
-    url: req.url,
-    userAgent: req.get('User-Agent'),
-    ip: req.ip
-  });
+  logger.warn('Route not found', sanitizeRequestForLogging(req));
 
   return res.status(404).json({
     error: true,

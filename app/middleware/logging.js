@@ -36,19 +36,46 @@ const generateRequestId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
+// Sanitize request data for logging
+const sanitizeForLogging = (req) => {
+  const sanitized = {
+    method: req.method,
+    url: req.url,
+    query: req.query,
+    params: req.params,
+    userAgent: req.get('User-Agent'),
+    ip: req.ip
+  };
+
+  // Only include body and headers in debug mode, and sanitize them
+  if (process.env.LOG_LEVEL === 'debug') {
+    if (req.body) {
+      const sanitizedBody = { ...req.body };
+      delete sanitizedBody.password;
+      delete sanitizedBody.token;
+      delete sanitizedBody.secret;
+      sanitized.body = sanitizedBody;
+    }
+
+    if (req.headers) {
+      const sanitizedHeaders = { ...req.headers };
+      delete sanitizedHeaders.authorization;
+      delete sanitizedHeaders.cookie;
+      delete sanitizedHeaders['x-api-key'];
+      sanitized.headers = sanitizedHeaders;
+    }
+  }
+
+  return sanitized;
+};
+
 // Error logging middleware
 const errorLogger = (err, req, res, next) => {
   console.error(`[${new Date().toISOString()}] ERROR ${req.id}:`, {
     error: err.message,
-    stack: err.stack,
-    method: req.method,
-    url: req.url,
-    body: req.body,
-    query: req.query,
-    params: req.params,
-    headers: req.headers,
-    userAgent: req.get('User-Agent'),
-    ip: req.ip
+    // Only include stack trace in debug mode
+    ...(process.env.LOG_LEVEL === 'debug' && { stack: err.stack }),
+    ...sanitizeForLogging(req)
   });
   
   next(err);
@@ -93,13 +120,16 @@ const logger = {
   },
   
   error: (message, error = null, meta = {}) => {
+    const errorInfo = error ? {
+      message: error.message,
+      // Only include stack trace in debug mode
+      ...(process.env.LOG_LEVEL === 'debug' && { stack: error.stack })
+    } : null;
+
     console.error(JSON.stringify({
       level: 'error',
       message,
-      error: error ? {
-        message: error.message,
-        stack: error.stack
-      } : null,
+      error: errorInfo,
       timestamp: new Date().toISOString(),
       ...meta
     }));
