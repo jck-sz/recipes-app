@@ -1,0 +1,23 @@
+{
+  "name": "fodmap-recipe-app",
+  "version": "1.0.0",
+  "description": "FODMAP Recipe Management Application",
+  "scripts": {
+    "dev": "powershell -ExecutionPolicy Bypass -File start-dev.ps1",
+    "dev:frontend": "powershell -ExecutionPolicy Bypass -File start-dev.ps1 -FrontendOnly",
+    "dev:simple": "start-dev.bat",
+    "dev:frontend-simple": "start-dev.bat frontend",
+    "start": "npm run dev",
+    "test": "jest",
+    "setup": "cd docker && npm run setup"
+  },
+  "devDependencies": {
+    "jest": "^30.0.0",
+    "supertest": "^7.1.1"
+  },
+  "dependencies": {
+    "dompurify": "^3.2.6",
+    "express-rate-limit": "^7.5.0",
+    "jsdom": "^26.1.0"
+  }
+}

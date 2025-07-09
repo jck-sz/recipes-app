@@ -57,6 +57,33 @@ console.log('🚀 Starting Docker services...');
 
 try {
     execSync('docker-compose up -d', { stdio: 'inherit' });
+
+    console.log('');
+    console.log('⏳ Waiting for database to be ready...');
+
+    // Wait for database to be ready
+    const maxWait = 60; // seconds
+    let waited = 0;
+
+    while (waited < maxWait) {
+        try {
+            // Try to connect to the database
+            execSync('docker-compose exec -T db pg_isready -U postgres', { stdio: 'pipe' });
+            console.log('✅ Database is ready!');
+            break;
+        } catch (error) {
+            process.stdout.write('.');
+            require('child_process').execSync('timeout /t 2 /nobreak >nul', { stdio: 'pipe' });
+            waited += 2;
+        }
+    }
+
+    if (waited >= maxWait) {
+        console.log('');
+        console.log('⚠️ Database took longer than expected to start');
+        console.log('💡 The application may need a few more moments to connect');
+    }
+
 } catch (error) {
     console.error('❌ Failed to start Docker services');
     console.error('💡 Make sure Docker is running and try again');

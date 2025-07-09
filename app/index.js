@@ -92,8 +92,8 @@ const { checkConnection } = require('./db');
 
 async function verifyDatabaseConnection() {
   console.log('Verifying database connection...');
-  const maxRetries = 10;
-  const retryDelay = 2000; // 2 seconds
+  const maxRetries = 30; // Increased retries for Docker startup
+  const retryDelay = 3000; // 3 seconds
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     const health = await checkConnection();
@@ -105,15 +105,27 @@ async function verifyDatabaseConnection() {
       return true;
     }
 
-    console.warn(`❌ Database connection failed (attempt ${attempt}/${maxRetries}):`, health.error);
+    if (attempt === 1) {
+      console.log('🔄 Waiting for database to be ready...');
+    }
+
+    if (attempt <= 5) {
+      process.stdout.write('.');
+    } else {
+      console.warn(`❌ Database connection failed (attempt ${attempt}/${maxRetries}):`, health.error);
+    }
 
     if (attempt < maxRetries) {
-      console.log(`Retrying in ${retryDelay/1000} seconds...`);
+      if (attempt > 5) {
+        console.log(`Retrying in ${retryDelay/1000} seconds...`);
+      }
       await new Promise(resolve => setTimeout(resolve, retryDelay));
     }
   }
 
+  console.error('');
   console.error('💥 Failed to establish database connection after all retries');
+  console.error('💡 Make sure Docker services are running: cd docker && npm run setup');
   return false;
 }
 

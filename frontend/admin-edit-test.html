@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>FODMAP Admin Panel - Edit Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        /* Button styles */
+        .delete-btn, .edit-btn, .save-btn, .cancel-btn {
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+            height: 28px;
+            margin-left: 4px;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        .edit-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #1e7e34;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .cancel-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background: #545b62;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+        }
+
+        .delete-btn:active, .edit-btn:active, .save-btn:active, .cancel-btn:active {
+            transform: scale(0.95);
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s ease;
+        }
+
+        .item-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .recipe-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin: 5px 0;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .recipe-item:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+        }
+
+        .item-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .edit-mode {
+            background-color: #fff3cd !important;
+            border-color: #ffeaa7 !important;
+        }
+
+        .edit-input {
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin: 2px 0;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .edit-select {
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            margin: 2px 0;
+            background: white;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>FODMAP Admin Panel - Edit Functionality Test</h1>
+        
+        <div class="two-column">
+            <div>
+                <h3>Test Recipes</h3>
+                <div id="testRecipes">
+                    <div class="recipe-item" id="recipe-1">
+                        <div class="item-content" id="recipe-content-1">
+                            <strong>Test Recipe 1</strong><br>
+                            <small>Category: 1 | Prep: 30 min</small>
+                        </div>
+                        <div class="item-actions">
+                            <button onclick="editRecipe(1)" class="edit-btn" title="Edit Recipe" id="edit-recipe-1">✏️</button>
+                            <button onclick="alert('Delete clicked')" class="delete-btn" title="Delete Recipe">🗑️</button>
+                        </div>
+                    </div>
+                    
+                    <div class="recipe-item" id="recipe-2">
+                        <div class="item-content" id="recipe-content-2">
+                            <strong>Test Recipe 2</strong><br>
+                            <small>Category: 2 | Prep: 45 min</small>
+                        </div>
+                        <div class="item-actions">
+                            <button onclick="editRecipe(2)" class="edit-btn" title="Edit Recipe" id="edit-recipe-2">✏️</button>
+                            <button onclick="alert('Delete clicked')" class="delete-btn" title="Delete Recipe">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <h3>Test Ingredients</h3>
+                <div id="testIngredients">
+                    <div class="item-row" id="ingredient-1">
+                        <div class="item-content" id="ingredient-content-1">
+                            <strong>Test Ingredient 1</strong> (g) - <span style="color: green">LOW</span>
+                        </div>
+                        <div class="item-actions">
+                            <button onclick="editIngredient(1)" class="edit-btn" title="Edit Ingredient" id="edit-ingredient-1">✏️</button>
+                            <button onclick="alert('Delete clicked')" class="delete-btn" title="Delete Ingredient">🗑️</button>
+                        </div>
+                    </div>
+                    
+                    <div class="item-row" id="ingredient-2">
+                        <div class="item-content" id="ingredient-content-2">
+                            <strong>Test Ingredient 2</strong> (ml) - <span style="color: orange">MODERATE</span>
+                        </div>
+                        <div class="item-actions">
+                            <button onclick="editIngredient(2)" class="edit-btn" title="Edit Ingredient" id="edit-ingredient-2">✏️</button>
+                            <button onclick="alert('Delete clicked')" class="delete-btn" title="Delete Ingredient">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="message" style="margin-top: 20px; text-align: center;"></div>
+    </div>
+
+    <script>
+        // Mock data for testing
+        const mockRecipes = {
+            1: { id: 1, title: "Test Recipe 1", description: "A test recipe", preparation_time: 30, serving_size: 4, category_id: 1 },
+            2: { id: 2, title: "Test Recipe 2", description: "Another test recipe", preparation_time: 45, serving_size: 2, category_id: 2 }
+        };
+
+        const mockIngredients = {
+            1: { id: 1, name: "Test Ingredient 1", quantity_unit: "g", fodmap_level: "LOW" },
+            2: { id: 2, name: "Test Ingredient 2", quantity_unit: "ml", fodmap_level: "MODERATE" }
+        };
+
+        // Edit functionality for recipes
+        async function editRecipe(recipeId) {
+            try {
+                const recipe = mockRecipes[recipeId];
+                const contentDiv = document.getElementById(`recipe-content-${recipeId}`);
+                const recipeDiv = document.getElementById(`recipe-${recipeId}`);
+                
+                // Add edit mode class
+                recipeDiv.classList.add('edit-mode');
+                
+                // Store original content
+                const originalContent = contentDiv.innerHTML;
+                
+                // Create edit form
+                contentDiv.innerHTML = `
+                    <div>
+                        <input type="text" class="edit-input" id="edit-recipe-title-${recipeId}" 
+                               value="${recipe.title}" placeholder="Recipe Title" style="width: 300px;">
+                        <br>
+                        <input type="text" class="edit-input" id="edit-recipe-description-${recipeId}" 
+                               value="${recipe.description || ''}" placeholder="Description" style="width: 300px;">
+                        <br>
+                        <input type="number" class="edit-input" id="edit-recipe-prep-${recipeId}" 
+                               value="${recipe.preparation_time || ''}" placeholder="Prep time (min)" style="width: 100px;">
+                        <input type="number" class="edit-input" id="edit-recipe-serving-${recipeId}" 
+                               value="${recipe.serving_size || ''}" placeholder="Serving size" style="width: 100px;">
+                        <select class="edit-select" id="edit-recipe-category-${recipeId}">
+                            <option value="1" ${recipe.category_id === 1 ? 'selected' : ''}>Śniadanie</option>
+                            <option value="2" ${recipe.category_id === 2 ? 'selected' : ''}>Obiad</option>
+                            <option value="3" ${recipe.category_id === 3 ? 'selected' : ''}>Kolacja</option>
+                            <option value="4" ${recipe.category_id === 4 ? 'selected' : ''}>Przekąska</option>
+                        </select>
+                    </div>
+                `;
+                
+                // Replace edit button with save/cancel buttons
+                const actionsDiv = recipeDiv.querySelector('.item-actions');
+                actionsDiv.innerHTML = `
+                    <button onclick="saveRecipe(${recipeId}, '${originalContent.replace(/'/g, "\\'")}')"
+                            class="save-btn"
+                            title="Save Changes">
+                        💾
+                    </button>
+                    <button onclick="cancelEdit('recipe', ${recipeId}, '${originalContent.replace(/'/g, "\\'")}')"
+                            class="cancel-btn"
+                            title="Cancel Edit">
+                        ❌
+                    </button>
+                `;
+                
+            } catch (error) {
+                alert(`Error editing recipe: ${error.message}`);
+            }
+        }
+
+        // Edit functionality for ingredients
+        async function editIngredient(ingredientId) {
+            try {
+                const ingredient = mockIngredients[ingredientId];
+                const contentDiv = document.getElementById(`ingredient-content-${ingredientId}`);
+                const ingredientDiv = document.getElementById(`ingredient-${ingredientId}`);
+                
+                // Add edit mode class
+                ingredientDiv.classList.add('edit-mode');
+                
+                // Store original content
+                const originalContent = contentDiv.innerHTML;
+                
+                // Create edit form
+                contentDiv.innerHTML = `
+                    <div>
+                        <input type="text" class="edit-input" id="edit-ingredient-name-${ingredientId}" 
+                               value="${ingredient.name}" placeholder="Ingredient Name" style="width: 200px;">
+                        <input type="text" class="edit-input" id="edit-ingredient-unit-${ingredientId}" 
+                               value="${ingredient.quantity_unit || ''}" placeholder="Unit" style="width: 80px;">
+                        <select class="edit-select" id="edit-ingredient-fodmap-${ingredientId}">
+                            <option value="LOW" ${ingredient.fodmap_level === 'LOW' ? 'selected' : ''}>LOW</option>
+                            <option value="MODERATE" ${ingredient.fodmap_level === 'MODERATE' ? 'selected' : ''}>MODERATE</option>
+                            <option value="HIGH" ${ingredient.fodmap_level === 'HIGH' ? 'selected' : ''}>HIGH</option>
+                        </select>
+                    </div>
+                `;
+                
+                // Replace edit button with save/cancel buttons
+                const actionsDiv = ingredientDiv.querySelector('.item-actions');
+                actionsDiv.innerHTML = `
+                    <button onclick="saveIngredient(${ingredientId}, '${originalContent.replace(/'/g, "\\'")}')"
+                            class="save-btn"
+                            title="Save Changes">
+                        💾
+                    </button>
+                    <button onclick="cancelEdit('ingredient', ${ingredientId}, '${originalContent.replace(/'/g, "\\'")}')"
+                            class="cancel-btn"
+                            title="Cancel Edit">
+                        ❌
+                    </button>
+                `;
+                
+            } catch (error) {
+                alert(`Error editing ingredient: ${error.message}`);
+            }
+        }
+
+        // Save recipe changes (mock)
+        async function saveRecipe(recipeId, originalContent) {
+            try {
+                const title = document.getElementById(`edit-recipe-title-${recipeId}`).value.trim();
+                const description = document.getElementById(`edit-recipe-description-${recipeId}`).value.trim();
+                const prepTime = document.getElementById(`edit-recipe-prep-${recipeId}`).value;
+                const servingSize = document.getElementById(`edit-recipe-serving-${recipeId}`).value;
+                const categoryId = parseInt(document.getElementById(`edit-recipe-category-${recipeId}`).value);
+
+                if (!title) {
+                    alert('Recipe title is required');
+                    return;
+                }
+
+                // Update mock data
+                mockRecipes[recipeId] = {
+                    ...mockRecipes[recipeId],
+                    title: title,
+                    description: description || null,
+                    preparation_time: prepTime ? parseInt(prepTime) : null,
+                    serving_size: servingSize ? parseInt(servingSize) : null,
+                    category_id: categoryId
+                };
+
+                // Update display
+                const contentDiv = document.getElementById(`recipe-content-${recipeId}`);
+                const recipeDiv = document.getElementById(`recipe-${recipeId}`);
+                
+                recipeDiv.classList.remove('edit-mode');
+                contentDiv.innerHTML = `
+                    <strong>${title}</strong><br>
+                    <small>Category: ${categoryId} | Prep: ${prepTime || 'N/A'} min</small>
+                `;
+                
+                // Restore action buttons
+                const actionsDiv = recipeDiv.querySelector('.item-actions');
+                actionsDiv.innerHTML = `
+                    <button onclick="editRecipe(${recipeId})" class="edit-btn" title="Edit Recipe" id="edit-recipe-${recipeId}">✏️</button>
+                    <button onclick="alert('Delete clicked')" class="delete-btn" title="Delete Recipe">🗑️</button>
+                `;
+
+                document.getElementById('message').innerHTML = '<p class="success">Recipe updated successfully!</p>';
+                setTimeout(() => document.getElementById('message').innerHTML = '', 3000);
+
+            } catch (error) {
+                alert(`Error saving recipe: ${error.message}`);
+            }
+        }
+
+        // Save ingredient changes (mock)
+        async function saveIngredient(ingredientId, originalContent) {
+            try {
+                const name = document.getElementById(`edit-ingredient-name-${ingredientId}`).value.trim();
+                const unit = document.getElementById(`edit-ingredient-unit-${ingredientId}`).value.trim();
+                const fodmapLevel = document.getElementById(`edit-ingredient-fodmap-${ingredientId}`).value;
+
+                if (!name) {
+                    alert('Ingredient name is required');
+                    return;
+                }
+
+                // Update mock data
+                mockIngredients[ingredientId] = {
+                    ...mockIngredients[ingredientId],
+                    name: name,
+                    quantity_unit: unit || null,
+                    fodmap_level: fodmapLevel
+                };
+
+                // Update display
+                const contentDiv = document.getElementById(`ingredient-content-${ingredientId}`);
+                const ingredientDiv = document.getElementById(`ingredient-${ingredientId}`);
+                
+                ingredientDiv.classList.remove('edit-mode');
+                const fodmapColor = fodmapLevel === 'LOW' ? 'green' : fodmapLevel === 'MODERATE' ? 'orange' : 'red';
+                contentDiv.innerHTML = `
+                    <strong>${name}</strong> (${unit || 'unit'}) - <span style="color: ${fodmapColor}">${fodmapLevel}</span>
+                `;
+                
+                // Restore action buttons
+                const actionsDiv = ingredientDiv.querySelector('.item-actions');
+                actionsDiv.innerHTML = `
+                    <button onclick="editIngredient(${ingredientId})" class="edit-btn" title="Edit Ingredient" id="edit-ingredient-${ingredientId}">✏️</button>
+                    <button onclick="alert('Delete clicked')" class="delete-btn" title="Delete Ingredient">🗑️</button>
+                `;
+
+                document.getElementById('message').innerHTML = '<p class="success">Ingredient updated successfully!</p>';
+                setTimeout(() => document.getElementById('message').innerHTML = '', 3000);
+
+            } catch (error) {
+                alert(`Error saving ingredient: ${error.message}`);
+            }
+        }
+
+        // Cancel edit mode
+        function cancelEdit(type, itemId, originalContent) {
+            const itemDiv = document.getElementById(`${type}-${itemId}`);
+            const contentDiv = document.getElementById(`${type}-content-${itemId}`);
+            
+            // Remove edit mode class
+            itemDiv.classList.remove('edit-mode');
+            
+            // Restore original content
+            contentDiv.innerHTML = originalContent;
+            
+            // Restore original action buttons
+            const actionsDiv = itemDiv.querySelector('.item-actions');
+            if (type === 'recipe') {
+                actionsDiv.innerHTML = `
+                    <button onclick="editRecipe(${itemId})" class="edit-btn" title="Edit Recipe" id="edit-recipe-${itemId}">✏️</button>
+                    <button onclick="alert('Delete clicked')" class="delete-btn" title="Delete Recipe">🗑️</button>
+                `;
+            } else if (type === 'ingredient') {
+                actionsDiv.innerHTML = `
+                    <button onclick="editIngredient(${itemId})" class="edit-btn" title="Edit Ingredient" id="edit-ingredient-${itemId}">✏️</button>
+                    <button onclick="alert('Delete clicked')" class="delete-btn" title="Delete Ingredient">🗑️</button>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

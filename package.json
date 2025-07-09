@@ -1,11 +1,17 @@
 {
-  "devDependencies": {
-    "jest": "^30.0.0",
-    "supertest": "^7.1.1"
+  "name": "fodmap-recipe-app",
+  "version": "1.0.0",
+  "description": "FODMAP Recipe Management Application",
+  "scripts": {
+    "start": "start.bat",
+    "dev": "start.bat",
+    "setup": "cd docker && npm run setup",
+    "backend": "cd app && npm start",
+    "frontend": "cd frontend && npx http-server -p 3001",
+    "health": "node tools/health-check.js",
+    "check": "node tools/health-check.js"
   },
-  "dependencies": {
-    "dompurify": "^3.2.6",
-    "express-rate-limit": "^7.5.0",
-    "jsdom": "^26.1.0"
-  }
+  "keywords": ["fodmap", "recipes", "food", "health"],
+  "author": "FODMAP Recipe Team",
+  "license": "MIT"
 }

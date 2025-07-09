@@ -2,7 +2,41 @@
 
 A full-stack web application for managing recipes and ingredients with FODMAP (Fermentable Oligosaccharides, Disaccharides, Monosaccharides, and Polyols) level tracking.
 
-## 🚀 Quick Start (New Computer Setup)
+## 🚀 Quick Start
+
+**Prerequisites:** Docker Desktop must be running
+
+```bash
+# Clone and start the application
+git clone <repository>
+cd fodmap
+npm start
+```
+
+That's it! The application will:
+1. ✅ Start the database automatically
+2. ⏳ Wait for it to be ready
+3. 🚀 Start the backend API
+4. 🌐 Start the frontend
+5. 🔗 Open the admin panel in your browser
+
+## 📱 Access the Application
+
+- **Frontend**: http://localhost:3001
+- **Admin Panel**: http://localhost:3001/admin.html
+- **API Health**: http://localhost:3000/health
+- **Admin Password**: `Dupadupa123`
+
+## 🔧 Alternative Commands
+
+```bash
+npm run setup     # Setup database only
+npm run backend   # Start backend only
+npm run frontend  # Start frontend only
+npm run health    # Check service health
+```
+
+## 🚀 New Computer Setup
 
 ### Prerequisites
 - **Docker & Docker Compose** (required for backend)
