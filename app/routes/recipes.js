@@ -1,3 +1,4 @@
+console.log('Loading recipes.js routes file');
 const express = require('express');
 const router = express.Router();
 const { query, withTransaction } = require('../db');
@@ -5,6 +6,7 @@ const { success, notFound, conflict, created, paginated } = require('../utils/re
 const { validateBody, validateParams, validateQuery } = require('../middleware/validation');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { bulkOperationLimiter } = require('../middleware/rateLimiting');
+const { recipeSanitization } = require('../middleware/inputSanitization');
 const {
   recipeCreateSchema,
   recipeUpdateSchema,
@@ -339,6 +341,7 @@ router.get('/:id/ingredients',
 
 // POST /recipes - Create new recipe with ingredients and tags
 router.post('/',
+  recipeSanitization,
   validateBody(recipeCreateSchema),
   asyncHandler(async (req, res) => {
     const { title, description, preparation_time, category_id, serving_size, image_url, ingredients, tags } = req.body;
@@ -392,6 +395,7 @@ router.post('/',
 // PUT /recipes/:id - Update recipe including ingredients and tags
 router.put('/:id',
   validateParams(idParamSchema),
+  recipeSanitization,
   validateBody(recipeUpdateSchema),
   asyncHandler(async (req, res) => {
     const { id } = req.params;

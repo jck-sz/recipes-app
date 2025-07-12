@@ -15,10 +15,10 @@ const app = express();
 const { requestId, requestLogger, errorLogger } = require('./middleware/logging');
 const { globalErrorHandler, notFoundHandler } = require('./middleware/errorHandler');
 const { generalLimiter, strictLimiter } = require('./middleware/rateLimiting');
-const { generalSanitization } = require('./middleware/inputSanitization');
+const { sanitizeBody } = require('./middleware/inputSanitization');
 
 // Import all route modules
-const recipesRouter = require('./routes/recipes');
+const recipesRouter = require('./routes/recipes.js');
 const categoriesRouter = require('./routes/categories');
 const ingredientsRouter = require('./routes/ingredients');
 const tagsRouter = require('./routes/tags');
@@ -59,12 +59,28 @@ app.use(strictLimiter);
 // Request logging middleware
 app.use(requestLogger());
 
+// Debug middleware to log ALL requests
+app.use((req, res, next) => {
+  console.log(`=== REQUEST: ${req.method} ${req.url} ===`);
+  console.log('Headers:', req.headers);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+  }
+  next();
+});
+
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Input sanitization middleware
-app.use(generalSanitization);
+// Input sanitization middleware (excluding description which is handled per-route)
+app.use(sanitizeBody({
+  title: { type: 'string', options: { maxLength: 255 } },
+  name: { type: 'string', options: { maxLength: 255 } },
+  search: { type: 'string', options: { maxLength: 100 } },
+  q: { type: 'string', options: { maxLength: 100 } },
+  description: { type: 'skip' } // Skip description - handled by route-specific middleware
+}));
 
 // Add a root route
 app.get('/', (_, res) => {

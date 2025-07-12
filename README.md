@@ -22,7 +22,8 @@ That's it! The application will:
 
 ## 📱 Access the Application
 
-- **Frontend**: http://localhost:3001
+- **Frontend (SystemJS)**: http://localhost:3001
+- **Frontend (Angular)**: http://localhost:3002
 - **Admin Panel**: http://localhost:3001/admin.html
 - **API Health**: http://localhost:3000/health
 - **Admin Password**: `Dupadupa123`
@@ -71,7 +72,7 @@ npx http-server -p 3001
 ```
 
 ### 4. Access the Application
-- **Frontend**: http://localhost:3001/simple.html
+- **Frontend**: http://localhost:3001
 - **Admin Panel**: http://localhost:3001/admin.html (Password: `Dupadupa123`)
 - **API**: http://localhost:3000
 - **Health Check**: http://localhost:3000/health
@@ -81,6 +82,7 @@ npx http-server -p 3001
 ### Frontend Functionality
 - **Recipe Display by Category**: Recipes organized by meal type (Śniadanie, Obiad, Kolacja, Przekąska)
 - **Complete Recipe Information**: Title, description, prep time, serving size, and full ingredient lists
+- **Rich Text Display**: Recipe descriptions support HTML formatting (bold, italic, lists, paragraphs)
 - **Ingredient Details**: Each recipe shows ingredients with quantities, units, and FODMAP levels
 - **FODMAP Level Indicators**: Color-coded badges (LOW=green, MODERATE=yellow, HIGH=red)
 - **Ingredient Browser**: Grid view of all ingredients with FODMAP levels and units
@@ -120,15 +122,16 @@ npm run shell:db
 
 ### Frontend Development
 The frontend uses a simple HTML/JavaScript approach for maximum compatibility:
-- **Main app**: `frontend/simple.html` (recommended)
+- **Main app**: `frontend/index.html` (recommended)
 - **Admin panel**: `frontend/admin.html` (password-protected recipe management)
-- **Angular version**: `frontend/index.html` (has SystemJS loading issues)
+- **Angular CLI version**: `frontend/angular-app/` (modern Angular implementation)
 - **API testing**: `frontend/test.html`
 
 ### Admin Panel Features
 The admin panel (`http://localhost:3001/admin.html`) provides:
 - **Password Protection**: Secure access with configurable password
 - **Recipe Management**: Add new recipes with ingredients and details
+- **Rich Text Editor**: Full WYSIWYG editor for recipe descriptions with bold, italic, lists, and formatting
 - **Ingredient Management**: Add new ingredients with FODMAP levels
 - **Dynamic Ingredient Addition**: Create new ingredients while adding recipes
 - **Data Overview**: View existing recipes and ingredients
@@ -153,9 +156,9 @@ fodmap/
 │   ├── setup.js          # Automated setup script
 │   └── .env              # Environment variables (auto-generated)
 ├── frontend/              # Frontend application
-│   ├── simple.html       # Working HTML/JS frontend
-│   ├── app/              # Angular components (has issues)
-│   └── index.html        # Angular entry point
+│   ├── index.html        # Main HTML/JS frontend
+│   ├── angular-app/      # Modern Angular CLI application
+│   └── app/              # Legacy Angular components
 ├── migrations/            # Database schema and seed data
 │   ├── init-complete.sql # Complete database setup
 │   └── schema_enhancements.sql
@@ -204,6 +207,59 @@ curl http://localhost:3000/ingredients
 ### Sample Data
 The database is initialized with sample ingredients and their FODMAP levels. Recipes table starts empty.
 
+## 🆕 Angular Frontend
+
+The application now includes a modern Angular frontend alongside the original SystemJS version.
+
+### Features
+- **Modern Angular 20**: Latest Angular with standalone components
+- **Lazy Loading**: Components load on demand for better performance
+- **Responsive Design**: Mobile-friendly interface
+- **FODMAP Color Coding**: Visual indicators for ingredient safety levels
+- **Category Grouping**: Recipes organized by meal categories
+- **Admin Integration**: Direct access to admin panel
+
+### Development Commands
+```bash
+# Development server (with hot reload)
+cd frontend
+npm run dev
+
+# Build for production
+cd frontend
+npm run build
+
+# Serve production build
+cd frontend
+npm run serve
+
+# Build and serve (complete workflow)
+cd frontend
+npm start
+```
+
+### Architecture
+- **Standalone Components**: Modern Angular approach without NgModules
+- **Lazy Loading**: Routes load components on demand
+- **Environment Configuration**: API URLs managed via environment files
+- **HTTP Client**: Configured for API communication
+- **Routing**: Client-side routing with Angular Router
+
+### Migration Status
+✅ **Completed**:
+- Angular CLI project setup
+- Component migration (Recipes, Ingredients)
+- Service layer (Recipe, Ingredient, Category services)
+- Routing configuration
+- Styling and FODMAP features
+- Production build setup
+
+🔄 **Future Enhancements**:
+- Recipe creation forms
+- Ingredient management UI
+- User authentication
+- Advanced filtering and search
+
 ## 🚨 Troubleshooting
 
 ### Backend Issues
@@ -226,9 +282,9 @@ The database is initialized with sample ingredients and their FODMAP levels. Rec
    - Check browser console for CORS errors
    - Verify frontend is running on port 3001
 
-2. **Angular version not working**:
-   - Use `simple.html` instead of `index.html`
-   - Angular version has SystemJS loading issues
+2. **Legacy Angular version not working**:
+   - Use `index.html` instead of the legacy Angular components
+   - For modern Angular, use the `frontend/angular-app/` directory
 
 ### Database Issues
 1. **Authentication errors**:

@@ -11,6 +11,8 @@ const { JSDOM } = require('jsdom');
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 
+// DOMPurify is configured and ready for use
+
 /**
  * Sanitizes string input by removing/escaping potentially dangerous characters
  * @param {string} input - Input string to sanitize
@@ -52,7 +54,7 @@ function sanitizeString(input, options = {}) {
   if (allowHtml) {
     // Sanitize HTML using DOMPurify to prevent XSS
     sanitized = DOMPurify.sanitize(sanitized, {
-      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li'],
+      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'h1', 'h2', 'h3'],
       ALLOWED_ATTR: [],
       KEEP_CONTENT: true
     });
@@ -257,25 +259,32 @@ function sanitizeQuery(sanitizationRules = {}) {
 
 /**
  * Custom sanitization function for recipe descriptions
- * Converts newlines to <br> tags and allows basic HTML
+ * Handles both rich text HTML and plain text with newlines
  */
 function sanitizeDescription(description) {
   if (!description || typeof description !== 'string') {
     return description;
   }
 
-  // First convert literal \n strings to actual newlines (for form submissions)
-  let processed = description.replace(/\\n/g, '\n');
+  console.log('🔍 SANITIZE DEBUG - Input:', JSON.stringify(description));
 
-  // Then convert newlines to <br> tags
-  let sanitized = processed
-    .replace(/\r\n/g, '<br>')  // Windows line endings
-    .replace(/\n/g, '<br>')    // Unix line endings
-    .replace(/\r/g, '<br>');   // Mac line endings
+  let sanitized = description;
 
-  // Then sanitize HTML using DOMPurify to prevent XSS
+  // Check if content appears to be HTML (contains HTML tags)
+  const hasHtmlTags = /<[^>]+>/.test(description);
+
+  if (!hasHtmlTags) {
+    // Plain text: convert literal \n strings to actual newlines, then to <br> tags
+    sanitized = description
+      .replace(/\\n/g, '\n')     // Convert literal \n to actual newlines
+      .replace(/\r\n/g, '<br>')  // Windows line endings
+      .replace(/\n/g, '<br>')    // Unix line endings
+      .replace(/\r/g, '<br>');   // Mac line endings
+  }
+
+  // Sanitize HTML using DOMPurify to prevent XSS
   sanitized = DOMPurify.sanitize(sanitized, {
-    ALLOWED_TAGS: ['br', 'b', 'i', 'em', 'strong', 'p'],
+    ALLOWED_TAGS: ['br', 'b', 'i', 'em', 'strong', 'p', 'h1', 'h2', 'h3', 'ul', 'ol', 'li'],
     ALLOWED_ATTR: [],
     KEEP_CONTENT: true
   });
