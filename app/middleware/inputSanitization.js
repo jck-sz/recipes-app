@@ -46,6 +46,7 @@ function sanitizeString(input, options = {}) {
       sanitized = sanitized.replace(/[\x00-\x1F\x7F]/g, '');
     }
   }
+  // If removeControlChars is false, we don't remove any control characters, preserving newlines
 
   // Handle HTML content
   if (allowHtml) {
@@ -255,15 +256,53 @@ function sanitizeQuery(sanitizationRules = {}) {
 }
 
 /**
+ * Custom sanitization function for recipe descriptions
+ * Converts newlines to <br> tags and allows basic HTML
+ */
+function sanitizeDescription(description) {
+  if (!description || typeof description !== 'string') {
+    return description;
+  }
+
+  // First convert literal \n strings to actual newlines (for form submissions)
+  let processed = description.replace(/\\n/g, '\n');
+
+  // Then convert newlines to <br> tags
+  let sanitized = processed
+    .replace(/\r\n/g, '<br>')  // Windows line endings
+    .replace(/\n/g, '<br>')    // Unix line endings
+    .replace(/\r/g, '<br>');   // Mac line endings
+
+  // Then sanitize HTML using DOMPurify to prevent XSS
+  sanitized = DOMPurify.sanitize(sanitized, {
+    ALLOWED_TAGS: ['br', 'b', 'i', 'em', 'strong', 'p'],
+    ALLOWED_ATTR: [],
+    KEEP_CONTENT: true
+  });
+
+  return sanitized;
+}
+
+/**
  * General input sanitization middleware for common cases
  */
 const generalSanitization = sanitizeBody({
   title: { type: 'string', options: { maxLength: 255 } },
-  description: { type: 'string', options: { maxLength: 2000, allowHtml: false } },
+  description: { type: 'skip' }, // We'll handle description separately
   name: { type: 'string', options: { maxLength: 255 } },
   search: { type: 'string', options: { maxLength: 100 } },
   q: { type: 'string', options: { maxLength: 100 } }
 });
+
+/**
+ * Recipe-specific sanitization middleware
+ */
+const recipeSanitization = (req, res, next) => {
+  if (req.body && req.body.description) {
+    req.body.description = sanitizeDescription(req.body.description);
+  }
+  next();
+};
 
 module.exports = {
   sanitizeString,
@@ -271,5 +310,7 @@ module.exports = {
   sanitizeArray,
   sanitizeBody,
   sanitizeQuery,
-  generalSanitization
+  generalSanitization,
+  recipeSanitization,
+  sanitizeDescription
 };
