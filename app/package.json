@@ -6,8 +6,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "start": "echo \"❌ Local execution disabled. Use: cd docker && npm run setup\" && exit 1",
+    "dev": "echo \"❌ Local execution disabled. Use: cd docker && npm run setup\" && exit 1",
+    "docker:start": "node index.js",
+    "docker:dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",

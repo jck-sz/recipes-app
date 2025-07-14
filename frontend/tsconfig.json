@@ -1,21 +1,34 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
+  "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
-    "module": "system",
-    "moduleResolution": "node",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "lib": ["dom", "es2015"],
-    "outDir": "./dist",
-    "skipLibCheck": true
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve"
   },
-  "files": [
-    "app/main.ts",
-    "app/app.module.ts",
-    "app/app.component.ts",
-    "app/recipes.component.ts",
-    "app/ingredients.component.ts",
-    "app/recipe.service.ts",
-    "app/ingredient.service.ts"
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "typeCheckHostBindings": true,
+    "strictTemplates": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.spec.json"
+    }
   ]
 }

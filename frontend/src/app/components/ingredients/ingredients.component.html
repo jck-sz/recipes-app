@@ -1,0 +1,36 @@
+<div class="ingredients-container">
+  <div class="header-content">
+    <h1 class="logo">🍽️ FODMAP Recipes</h1>
+    <div class="nav-buttons">
+      <button (click)="goToRecipes()" class="nav-button">📖 Recipes</button>
+      <button (click)="openAdminPanel()" class="nav-button admin-button">⚙️ Admin Panel</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">🥬 Loading ingredients...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="!loading && !error && ingredients.length === 0" class="no-ingredients">
+    No ingredients found. Use the admin panel to add some ingredients!
+  </div>
+
+  <div *ngIf="!loading && !error && ingredients.length > 0" class="content">
+    <h2 class="section-title">Ingredients & FODMAP Levels</h2>
+    <div class="ingredients-grid">
+      <div *ngFor="let ingredient of ingredients"
+           class="ingredient-card"
+           [ngClass]="'fodmap-' + (ingredient.fodmap_level || 'unknown').toLowerCase()">
+        <div class="ingredient-info">
+          <div class="ingredient-name">{{ ingredient.name }}</div>
+          <div *ngIf="ingredient.description" class="ingredient-description">
+            {{ ingredient.description }}
+          </div>
+        </div>
+        <div class="fodmap-badge"
+             [ngClass]="'fodmap-' + (ingredient.fodmap_level || 'unknown').toLowerCase()">
+          {{ ingredient.fodmap_level || 'UNKNOWN' }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

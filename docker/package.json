@@ -5,13 +5,14 @@
   "scripts": {
     "setup": "node robust-setup.js",
     "setup:original": "node setup.js",
-    "dev": "docker-compose up",
-    "dev:detached": "docker-compose up -d",
-    "start": "docker-compose up -d",
+    "dev": "docker-compose up --build -d",
+    "dev:attached": "docker-compose up --build",
+    "start": "docker-compose up --build -d",
     "stop": "docker-compose down",
     "restart": "docker-compose restart",
     "logs": "docker-compose logs -f",
     "logs:api": "docker-compose logs -f api",
+    "logs:frontend": "docker-compose logs -f frontend",
     "logs:db": "docker-compose logs -f db",
     "status": "docker-compose ps",
     "clean": "docker-compose down -v",
@@ -21,5 +22,8 @@
     "fix-db-user": "node ensure-db-user.js",
     "health": "curl -s http://localhost:3000/health | jq . || curl -s http://localhost:3000/health",
     "reset": "docker-compose down -v && node robust-setup.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
   }
 }

@@ -67,7 +67,7 @@ const recipeIngredientSchema = Joi.object({
 // Recipe schemas
 const recipeCreateSchema = Joi.object({
   title: nonEmptyString.max(255).required(),
-  description: Joi.string().trim().max(2000).allow('', null),
+  description: Joi.string().max(2000).allow('', null), // Don't trim HTML content
   preparation_time: positiveInteger.allow(null),
   serving_size: positiveInteger.allow(null),
   image_url: url.allow('', null),
@@ -79,7 +79,7 @@ const recipeCreateSchema = Joi.object({
 
 const recipeUpdateSchema = Joi.object({
   title: nonEmptyString.max(255).required(),
-  description: Joi.string().trim().max(2000).allow('', null),
+  description: Joi.string().max(2000).allow('', null), // Don't trim HTML content
   preparation_time: positiveInteger.allow(null),
   serving_size: positiveInteger.allow(null),
   image_url: url.allow('', null),

@@ -30,4 +30,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node healthcheck.js || exit 1
 
 # Default command (can be overridden by docker-compose)
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "docker:dev"]

@@ -16,17 +16,20 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [1/3] Starting database services...
+echo [1/4] Starting database services...
 cd docker
 call npm run setup
+
+echo [2/4] Ensuring database user configuration...
+node ensure-db-user.js
 cd ..
 
 echo.
-echo [2/3] Starting backend API...
+echo [3/4] Starting backend API...
 start "FODMAP Backend" cmd /k "cd app && npm start"
 
-echo [3/3] Starting frontend...
-start "FODMAP Frontend" cmd /k "cd frontend && npx http-server -p 3001"
+echo [4/4] Starting frontend...
+start "FODMAP Frontend" cmd /k "cd frontend && ng serve --port 3001"
 
 echo.
 echo ========================================

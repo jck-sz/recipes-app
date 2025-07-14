@@ -1,7 +1,62 @@
+# Dependencies
 node_modules/
+
+# Environment files
 .env
-.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build outputs
+frontend/dist/
+app/dist/
+build/
+
+# Database
 docker-data/
+
+# Logs
 *.log
+logs/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.npm/
+.yarn/
+
+# Generated documentation and reports
+*_REPORT.md
+*_SUMMARY.md
+*_RESULTS.md
+*_FIX.md
+DEVELOPMENT_*.md
+PERMANENT-*.md
 CHANGELOG.md
 SETUP_GUIDE.md
+
+# Test data and temporary scripts
+test-*.json
+*_test.json
+*_fix.json
+bulk_*.json
+tools/*.json
+tools/*.txt
+tools/*.ps1
+tools/*.bat
+tools/*.sh

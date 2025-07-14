@@ -39,11 +39,11 @@ chmod +x setup.sh
 After setup, use these simple commands:
 
 ```bash
-# Development mode (shows logs in foreground)
+# Development mode (runs in background by default)
 npm run dev
 
-# Background mode (detached)
-npm run dev:detached
+# Development mode (shows logs in foreground)
+npm run dev:attached
 
 # View logs
 npm run logs

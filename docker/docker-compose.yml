@@ -50,7 +50,20 @@ services:
     networks:
       - fodmap-network
     restart: unless-stopped
-    command: npm run dev
+    command: npm run docker:dev
+
+  frontend:
+    container_name: fodmap-frontend-container
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    depends_on:
+      - api
+    networks:
+      - fodmap-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:

@@ -11,7 +11,17 @@
     "health": "node tools/health-check.js",
     "check": "node tools/health-check.js"
   },
-  "keywords": ["fodmap", "recipes", "food", "health"],
+  "keywords": [
+    "fodmap",
+    "recipes",
+    "food",
+    "health"
+  ],
   "author": "FODMAP Recipe Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "dompurify": "^3.2.6",
+    "express-rate-limit": "^7.5.1",
+    "jsdom": "^26.1.0"
+  }
 }
